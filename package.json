@@ -1,0 +1,10 @@
+{
+  "name": "flyskymods",
+  "version": "1.0.0",
+  "description": "FlySkyMods - Microsoft Flight Simulator Mods Marketplace",
+  "main": "server.js",
+  "scripts": {},
+  "keywords": ["flight-simulator", "mods", "marketplace"],
+  "author": "Satvik and Yash",
+  "license": "ISC"
+}
