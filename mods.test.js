@@ -20,4 +20,12 @@ describe("FlySkyMods API", () => {
     expect(res.body[0]).toHaveProperty("category");
     expect(res.body[0]).toHaveProperty("price");
   });
+
+  test("GET /api/mods/:id returns a single mod", async () => {
+    const res = await request(app).get("/api/mods/1");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.id).toBe(1);
+    expect(res.body.name).toBe("A320 Neo Pro");
+  });
 });
