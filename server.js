@@ -26,15 +26,28 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", app: "FlySkyMods" });
 });
 
-// Returns all mods. Optional filter: /api/mods?category=Aircraft
+// Returns all mods. Optional filters:
+//   /api/mods?category=Aircraft
+//   /api/mods?search=a320
+//   /api/mods?category=Aircraft&search=boeing
 app.get("/api/mods", (req, res) => {
-  const { category } = req.query;
+  const { category, search } = req.query;
 
   let result = mods;
 
   if (category) {
     result = result.filter(
       (m) => m.category.toLowerCase() === category.toLowerCase()
+    );
+  }
+
+  if (search) {
+    const term = search.toLowerCase();
+    result = result.filter(
+      (m) =>
+        m.name.toLowerCase().includes(term) ||
+        m.description.toLowerCase().includes(term) ||
+        m.developer.toLowerCase().includes(term)
     );
   }
 
