@@ -1,0 +1,1143 @@
+/* =========================================================
+   FlySkyMods - Main Stylesheet
+   Dark luxury aviation theme (deep purple night + gold)
+   ========================================================= */
+
+/* ---------- 1. Design tokens (CSS variables) ----------
+   Colours and sizes are defined once here and reused
+   everywhere, so the whole theme can be changed in one place. */
+:root {
+  --color-bg: #0c0818;            /* deep purple night sky */
+  --color-bg-soft: #151027;       /* slightly lighter panels */
+  --color-surface: rgba(255, 255, 255, 0.06);  /* glass cards */
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-text: #f5f2fa;
+  --color-text-muted: #b9b0cc;
+  --color-primary: #e9b960;       /* luxury gold */
+  --color-primary-dark: #c99634;
+  --color-accent: #e3a6d6;        /* soft sunset pink */
+
+  --gradient-primary: linear-gradient(135deg, #f7d88f 0%, #e3a94a 100%);
+  --gradient-sunset: linear-gradient(90deg, #f2c46d 0%, #e7a4c9 100%);
+
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-heading: "Playfair Display", Georgia, serif;
+  --font-script: "Great Vibes", cursive;
+
+  --radius: 14px;
+  --nav-height: 82px;
+  --max-width: 1200px;
+  --nav-max-width: 1440px;
+  --transition: 0.25s ease;
+}
+
+/* ---------- 2. Reset & base styles ---------- */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;        /* smooth scrolling for #anchor links */
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul {
+  list-style: none;
+}
+
+/* Shared style for all inline line-icons (SVG) */
+svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- 3. Reusable button ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1.4rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: var(--gradient-primary);
+  color: #1d1408;                 /* dark text on gold */
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(233, 185, 96, 0.35);
+}
+
+/* ---------- 4. Header & navigation bar ---------- */
+.site-header {
+  position: sticky;               /* stays at top while scrolling */
+  top: 0;
+  z-index: 100;
+  background: rgba(12, 8, 24, 0.55);
+  backdrop-filter: blur(16px);    /* glassmorphism effect */
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.navbar {
+  max-width: var(--nav-max-width);
+  height: var(--nav-height);
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;                  /* logo | links | actions in one row */
+  align-items: center;
+  gap: 2.5rem;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #2a1f14, #120c1c);
+  border: 1px solid rgba(233, 185, 96, 0.35);
+  color: var(--color-primary);
+}
+
+.logo-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.logo-name {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.logo-tagline {
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* Navigation links */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-left: auto;
+}
+
+.nav-links > li {
+  position: relative;             /* dropdown is positioned against this */
+}
+
+.nav-links a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 0.5rem 0;
+  transition: color var(--transition);
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--color-text);
+}
+
+/* Gold underline under the active link */
+.nav-links > li > a.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-primary);
+}
+
+.chevron {
+  width: 14px;
+  height: 14px;
+  transition: transform var(--transition);
+}
+
+/* Dropdown menus - hidden until the parent item is hovered or focused */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: -1rem;
+  min-width: 190px;
+  padding: 0.5rem;
+  border-radius: 12px;
+  background: rgba(21, 16, 39, 0.95);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity var(--transition), transform var(--transition),
+              visibility var(--transition);
+}
+
+/* Invisible bridge so the menu doesn't close while moving the mouse down */
+.dropdown::before {
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: 0;
+  right: 0;
+  height: 14px;
+}
+
+.dropdown a {
+  display: block;
+  padding: 0.55rem 0.9rem;
+  border-radius: 8px;
+}
+
+.dropdown a:hover {
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+
+.has-dropdown:hover .dropdown,
+.has-dropdown:focus-within .dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.has-dropdown:hover .chevron {
+  transform: rotate(180deg);
+}
+
+/* Right-side actions: search + cart */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.nav-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.nav-search input {
+  width: 320px;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.nav-search input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.nav-search input:focus {
+  border-color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.cart-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  color: var(--color-text);
+  transition: color var(--transition);
+}
+
+.cart-btn:hover {
+  color: var(--color-primary);
+}
+
+.cart-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.cart-count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #2a2340;
+  border: 1px solid var(--color-border);
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
+/* Mobile menu (hamburger) button - hidden on desktop,
+   shown on small screens in a later responsive commit */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-toggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--color-text);
+  border-radius: 2px;
+}
+
+/* ---------- 5. Hero section ---------- */
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  /* Pull the hero up underneath the glass navbar, like the mockup */
+  margin-top: calc(-1 * var(--nav-height));
+  padding: calc(var(--nav-height) + 3rem) 4rem 1.5rem;
+  /* Layers (top to bottom):
+     1. dark fade on the left so the headline is readable
+     2. dark fade at the bottom so the page blends into the next section
+     3. the aircraft photo */
+  background:
+    linear-gradient(90deg, rgba(12, 8, 24, 0.88) 0%, rgba(12, 8, 24, 0.55) 35%, rgba(12, 8, 24, 0) 65%),
+    linear-gradient(0deg, var(--color-bg) 0%, rgba(12, 8, 24, 0) 30%),
+    url("images/hero-aircraft.png") center / cover no-repeat,
+    var(--color-bg);
+}
+
+.hero-main {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  max-width: var(--nav-max-width);
+  margin: 0 auto;
+}
+
+.hero-text {
+  max-width: 680px;
+  padding-bottom: 4.5rem;          /* leaves room for the runway sign */
+}
+
+.hero-eyebrow {
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+  margin-bottom: 1.75rem;
+}
+
+.hero-eyebrow span {
+  margin: 0 0.6rem;
+}
+
+.hero-title {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(2.6rem, 5.2vw, 4.6rem);  /* scales with screen width */
+  line-height: 1.05;
+  letter-spacing: -1px;
+}
+
+.title-line {
+  white-space: nowrap;            /* keeps "Flight Experience" on one line */
+}
+
+.title-gold {
+  color: var(--color-primary);
+}
+
+/* Gradient text: the gradient is painted only inside the letters */
+.title-sunset {
+  background: linear-gradient(90deg, #f0c4a8 0%, #d9a5d6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-divider {
+  display: block;
+  width: 70px;
+  height: 2px;
+  margin: 1.75rem 0;
+  background: var(--color-primary);
+  opacity: 0.7;
+}
+
+.hero-subtitle {
+  color: #d7d0e4;
+  font-size: 1.1rem;
+  font-weight: 300;
+  margin-bottom: 2.25rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2.25rem;
+}
+
+/* Button variations */
+.btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-lg {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+}
+
+.btn-glow {
+  box-shadow: 0 0 30px rgba(233, 185, 96, 0.35);
+}
+
+.btn-glass {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: var(--color-text);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.btn-glass:hover {
+  border-color: var(--color-primary);
+  box-shadow: none;
+}
+
+/* Kept for other sections */
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+/* Trust row */
+.hero-trust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  color: #d7d0e4;
+  font-size: 0.9rem;
+}
+
+.avatars {
+  display: flex;
+}
+
+/* Overlapping circular avatars, coloured with gradients */
+.avatars span {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--color-bg);
+  margin-left: -10px;
+}
+
+.avatars span:first-child { margin-left: 0; background: linear-gradient(135deg, #f0abfc, #a855f7); }
+.avatars span:nth-child(2) { background: linear-gradient(135deg, #fde68a, #d97706); }
+.avatars span:nth-child(3) { background: linear-gradient(135deg, #f9a8d4, #be185d); }
+.avatars span:nth-child(4) { background: linear-gradient(135deg, #e9d5ff, #9ca3af); }
+
+.trust-rating {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.star {
+  color: var(--color-primary);
+}
+
+/* Right-side captions */
+.hero-location,
+.hero-signature {
+  position: absolute;
+  right: 0;
+  text-align: right;
+  text-transform: uppercase;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.hero-location {
+  top: 1rem;
+}
+
+.hero-location h2 {
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 6px;
+}
+
+.hero-location p {
+  font-size: 0.72rem;
+  letter-spacing: 2.5px;
+  color: #ddd5ea;
+  margin-top: 0.4rem;
+}
+
+.hero-location .hero-motto {
+  margin-top: 2rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.hero-signature {
+  bottom: 3rem;
+}
+
+.script {
+  font-family: var(--font-script);
+  font-size: 3.2rem;
+  text-transform: none;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.hero-signature p {
+  font-size: 0.72rem;
+  letter-spacing: 3px;
+  color: #ddd5ea;
+  margin-top: 0.75rem;
+}
+
+/* Airport runway sign: black/yellow + black/white */
+.runway-sign {
+  position: absolute;
+  left: -2.5rem;
+  bottom: 0;
+  display: flex;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1.5rem;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.runway-sign span {
+  padding: 0.35rem 0.8rem;
+  background: #141018;
+}
+
+.sign-number {
+  color: var(--color-primary);
+  border-right: 1px solid #3a3340;
+}
+
+/* Glass feature strip */
+.hero-features {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: 100%;
+  max-width: 1540px;
+  margin: 1rem auto 0;
+  border-radius: 18px;
+  background: rgba(30, 20, 50, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.hero-features li {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 1.4rem 2rem;
+}
+
+/* Thin divider between items (not before the first one) */
+.hero-features li + li {
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feature-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 1px solid rgba(233, 185, 96, 0.35);
+  background: rgba(233, 185, 96, 0.06);
+  color: var(--color-primary);
+}
+
+.feature-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.hero-features h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.hero-features p {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* Bottom bar */
+.hero-bottom {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1540px;
+  margin: 1.5rem auto 0;
+  font-size: 0.72rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #cfc7dd;
+}
+
+.bottom-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  white-space: nowrap;
+}
+
+.bottom-text svg {
+  width: 20px;
+  height: 20px;
+}
+
+.bottom-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.scroll-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  white-space: nowrap;
+}
+
+.mouse {
+  width: 20px;
+  height: 32px;
+  border: 1.5px solid #cfc7dd;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  padding-top: 6px;
+}
+
+/* The mouse wheel moves down and fades, hinting the user to scroll */
+.wheel {
+  width: 2px;
+  height: 6px;
+  border-radius: 2px;
+  background: #cfc7dd;
+  animation: scroll-wheel 1.8s ease-in-out infinite;
+}
+
+@keyframes scroll-wheel {
+  0%   { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(10px); }
+}
+
+/* Shared rating style (used by mod cards) */
+.rating {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ---------- 6. Shared section layout ---------- */
+.section {
+  padding: 5rem 1.5rem;
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 3rem;
+}
+
+.section-eyebrow {
+  color: var(--color-accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.section-title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  margin: 0.5rem 0 0.75rem;
+}
+
+.section-subtitle {
+  color: var(--color-text-muted);
+}
+
+/* ---------- 7. Mod cards ---------- */
+.mod-grid {
+  display: grid;
+  /* As many 260px+ columns as fit - automatically responsive */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.mod-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  transition: transform var(--transition), border-color var(--transition),
+              box-shadow var(--transition);
+}
+
+.mod-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(233, 185, 96, 0.5);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Thumbnail area */
+.mod-card-image {
+  position: relative;
+  height: 170px;
+  display: grid;
+  place-items: center;
+}
+
+.mod-icon {
+  font-size: 3.5rem;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+  transition: transform var(--transition);
+}
+
+.mod-card:hover .mod-icon {
+  transform: scale(1.12);
+}
+
+/* One gradient "thumbnail" per category */
+.thumb-aircraft { background: linear-gradient(135deg, #1e3a8a, #38bdf8); }
+.thumb-airport  { background: linear-gradient(135deg, #312e81, #a855f7); }
+.thumb-livery   { background: linear-gradient(135deg, #9a3412, #f59e0b); }
+.thumb-scenery  { background: linear-gradient(135deg, #064e3b, #10b981); }
+
+/* Free / premium price badges */
+.badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.badge-free {
+  background: rgba(34, 197, 94, 0.25);
+  color: #86efac;
+}
+
+.badge-premium {
+  background: rgba(245, 181, 68, 0.25);
+  color: #fcd34d;
+}
+
+/* Card text */
+.mod-card-body {
+  flex: 1;                        /* fills height so buttons line up */
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+}
+
+.mod-category {
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.mod-title {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  margin: 0.35rem 0 0.2rem;
+}
+
+.mod-author {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.mod-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.downloads {
+  color: var(--color-text-muted);
+}
+
+.btn-card {
+  margin-top: auto;               /* pushes button to card bottom */
+  text-align: center;
+  border-radius: 10px;
+}
+
+/* ---------- 8. Categories section ---------- */
+/* Slightly different background so sections are visually separated */
+.section-alt {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(233, 185, 96, 0.08), transparent 55%),
+    var(--color-bg-soft);
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.category-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  border-radius: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  transition: transform var(--transition), border-color var(--transition),
+              box-shadow var(--transition);
+}
+
+/* Soft gold glow that fades in from the corner on hover */
+.category-card::before {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(233, 185, 96, 0.25), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.category-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(233, 185, 96, 0.45);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+}
+
+.category-card:hover::before {
+  opacity: 1;
+}
+
+.category-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 1.5rem;
+  border-radius: 50%;
+  border: 1px solid rgba(233, 185, 96, 0.35);
+  background: rgba(233, 185, 96, 0.06);
+  color: var(--color-primary);
+  transition: background var(--transition), color var(--transition);
+}
+
+.category-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+/* Icon circle fills with gold on hover */
+.category-card:hover .category-icon {
+  background: var(--gradient-primary);
+  color: #1d1408;
+}
+
+.category-card h3 {
+  font-family: var(--font-heading);
+  font-size: 1.45rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.category-card p {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.category-link {
+  margin-top: auto;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.category-link span {
+  display: inline-block;
+  transition: transform var(--transition);
+}
+
+/* Arrow slides right on hover */
+.category-card:hover .category-link span {
+  transform: translateX(5px);
+}
+
+/* ---------- 9. Contact section ---------- */
+.contact-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 4rem;
+  align-items: start;
+}
+
+/* Left-align the heading here (other section headers are centred) */
+.contact-info .section-subtitle {
+  margin-bottom: 2.5rem;
+}
+
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.contact-list li {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.contact-list h3 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.contact-list p {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* Glass form card */
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 2.25rem;
+  border-radius: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: rgba(12, 8, 24, 0.55);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #7d7491;
+}
+
+/* Gold focus ring shows which field is active */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(233, 185, 96, 0.15);
+}
+
+.form-group select option {
+  background: var(--color-bg-soft);
+}
+
+.btn-full {
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ---------- 10. Footer ---------- */
+.site-footer {
+  padding: 4.5rem 1.5rem 2rem;
+  background: #08050f;
+  border-top: 1px solid var(--color-border);
+}
+
+.footer-grid {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 3rem;
+}
+
+.footer-brand p {
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+  max-width: 360px;
+  margin-top: 1.25rem;
+}
+
+.footer-col h4 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 1.1rem;
+}
+
+.footer-col ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.footer-col a {
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+  transition: color var(--transition);
+}
+
+.footer-col a:hover {
+  color: var(--color-text);
+}
+
+.footer-bottom {
+  max-width: var(--max-width);
+  margin: 3.5rem auto 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  color: #7d7491;
+  font-size: 0.82rem;
+}
