@@ -66,6 +66,25 @@ app.get("/api/mods/:id", (req, res) => {
   res.json(mod);
 });
 
+// Creates a new mod from the JSON request body
+app.post("/api/mods", (req, res) => {
+  const { name, category, price, developer, description } = req.body;
+
+  const newMod = {
+    id: mods.length ? Math.max(...mods.map((m) => m.id)) + 1 : 1,
+    name,
+    category,
+    price: Number(price) || 0,
+    developer,
+    description,
+    rating: 0,
+    downloads: 0
+  };
+
+  mods.push(newMod);
+  res.status(201).json(newMod);
+});
+
 // Only start listening when run directly with "node server.js".
 // Tests will import `app` without opening a real port.
 if (require.main === module) {
