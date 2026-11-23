@@ -58,4 +58,16 @@ describe("FlySkyMods API", () => {
     expect(bySearch.body.length).toBe(1);
     expect(bySearch.body[0].name).toBe("Boeing 747 Classic");
   });
+
+  test("GET /api/mods filters mods by free and paid price", async () => {
+    const free = await request(app).get("/api/mods?price=free");
+    expect(free.statusCode).toBe(200);
+    expect(free.body.length).toBe(3);
+    free.body.forEach((mod) => expect(mod.price).toBe(0));
+
+    const paid = await request(app).get("/api/mods?price=paid");
+    expect(paid.statusCode).toBe(200);
+    expect(paid.body.length).toBe(5);
+    paid.body.forEach((mod) => expect(mod.price).toBeGreaterThan(0));
+  });
 });
