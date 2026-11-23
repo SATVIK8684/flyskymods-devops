@@ -7,9 +7,52 @@
 // Express server serves both the website (public/) and the API (/api).
 const API_URL = "/api/mods";
 
-// References to the catalog elements in index.html
+// References to elements in index.html
 const catalogGrid = document.getElementById("catalog-grid");
 const catalogCount = document.getElementById("catalog-count");
+const catalogSearch = document.getElementById("catalog-search");
+const navSearchForm = document.getElementById("nav-search");
+const navSearchInput = document.getElementById("nav-search-input");
+
+// Current search text typed by the user
+let searchTerm = "";
+
+// Counts requests so that only the newest response is displayed
+// (a slow old response must not overwrite a newer search result)
+let latestRequestId = 0;
+
+// Timer used to "debounce" typing (wait until the user pauses)
+let searchTimer = null;
+
+// Visual style for each category: thumbnail gradient class + icon.
+// Category names match the backend's CATEGORIES list in server.js.
+const CATEGORY_STYLES = {
+  Aircraft:     { thumb: "thumb-aircraft",    icon: "✈️" },
+  Liveries:     { thumb: "thumb-livery",      icon: "🎨" },
+  Airports:     { thumb: "thumb-airport",     icon: "🛫" },
+  Scenery:      { thumb: "thumb-scenery",     icon: "🏔️" },
+  Utilities:    { thumb: "thumb-utility",     icon: "🧭" },
+  Enhancements: { thumb: "thumb-enhancement", icon: "☁️" }
+};
+
+// Fallback style if the API ever returns an unknown category
+const DEFAULT_STYLE = { thumb: "thumb-aircraft", icon: "✈️" };
+
+/**
+ * Builds the API URL with optional query parameters.
+ *   no search      -> /api/mods
+ *   search "boeing" -> /api/mods?search=boeing
+ */
+function buildApiUrl() {
+  const params = new URLSearchParams();
+
+  if (searchTerm) {
+    params.set("search", searchTerm);
+  }
+
+  const query = params.toString();
+  return query ? `${API_URL}?${query}` : API_URL;
+}
 
 /**
  * Fetches the list of mods from the backend API.
@@ -17,7 +60,7 @@ const catalogCount = document.getElementById("catalog-count");
  *   [{ id: 1, name: "A320 Neo Pro", category: "Aircraft", price: 24.99, ... }]
  */
 async function fetchMods() {
-  const response = await fetch(API_URL);
+  const response = await fetch(buildApiUrl());
 
   // fetch() only throws on network errors, so check the HTTP status too
   if (!response.ok) {
@@ -28,11 +71,90 @@ async function fetchMods() {
 }
 
 /**
- * Updates the results bar text, e.g. "Showing 8 mods".
+ * Escapes special HTML characters so text from the API is shown as plain
+ * text and can never be run as HTML/JavaScript (prevents XSS attacks).
+ */
+function escapeHTML(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/**
+ * Formats download numbers: 15230 -> "15.2K", 950 -> "950".
+ */
+function formatDownloads(count) {
+  if (count >= 1000) {
+    return `${(count / 1000).toFixed(1)}K`;
+  }
+  return String(count);
+}
+
+/**
+ * Builds the HTML for one mod card.
+ * Uses the same CSS classes as the static Featured Mods cards.
+ */
+function createModCard(mod) {
+  const style = CATEGORY_STYLES[mod.category] || DEFAULT_STYLE;
+  const isFree = mod.price === 0;
+
+  const badge = isFree
+    ? `<span class="badge badge-free">Free</span>`
+    : `<span class="badge badge-premium">$${mod.price.toFixed(2)}</span>`;
+
+  // New mods (added through the API) start with rating 0
+  const rating = mod.rating > 0 ? `★ ${mod.rating.toFixed(1)}` : "★ New";
+
+  return `
+    <article class="mod-card" data-id="${mod.id}">
+      <div class="mod-card-image ${style.thumb}">
+        <span class="mod-icon" aria-hidden="true">${style.icon}</span>
+        ${badge}
+      </div>
+      <div class="mod-card-body">
+        <span class="mod-category">${escapeHTML(mod.category)}</span>
+        <h3 class="mod-title">${escapeHTML(mod.name)}</h3>
+        <p class="mod-author">by ${escapeHTML(mod.developer)}</p>
+        <p class="mod-description">${escapeHTML(mod.description)}</p>
+        <div class="mod-meta">
+          <span class="rating">${rating}</span>
+          <span class="downloads">${formatDownloads(mod.downloads)} downloads</span>
+        </div>
+        <a href="#" class="btn btn-card">${isFree ? "Download" : "Buy Now"}</a>
+      </div>
+    </article>
+  `;
+}
+
+/**
+ * Replaces the grid content with real mod cards,
+ * or a "no results" message when the list is empty.
+ */
+function renderMods(mods) {
+  if (mods.length === 0) {
+    catalogGrid.innerHTML = `
+      <div class="catalog-message">
+        <h3>No mods found</h3>
+        <p>Nothing matches "${escapeHTML(searchTerm)}". Try a different search.</p>
+      </div>
+    `;
+    return;
+  }
+
+  catalogGrid.innerHTML = mods.map(createModCard).join("");
+}
+
+/**
+ * Updates the results bar text, e.g. "Showing 8 mods"
+ * or 'Showing 2 mods for "boeing"'.
  */
 function updateCount(total) {
   const label = total === 1 ? "mod" : "mods";
-  catalogCount.textContent = `Showing ${total} ${label}`;
+  const suffix = searchTerm ? ` for "${searchTerm}"` : "";
+  catalogCount.textContent = `Showing ${total} ${label}${suffix}`;
 }
 
 /**
@@ -49,13 +171,18 @@ function showError(message) {
 }
 
 /**
- * Loads mods when the page opens.
- * (Rendering the mod cards is added in the next commit.)
+ * Loads mods from the API (using the current search) and displays them.
  */
 async function loadCatalog() {
+  const requestId = ++latestRequestId;
+
   try {
     const mods = await fetchMods();
-    console.log("Mods loaded from API:", mods);
+
+    // Ignore this response if a newer search has started meanwhile
+    if (requestId !== latestRequestId) return;
+
+    renderMods(mods);
     updateCount(mods.length);
   } catch (error) {
     console.error(error);
@@ -63,4 +190,31 @@ async function loadCatalog() {
   }
 }
 
+/**
+ * Sets the search text and reloads the catalog.
+ */
+function applySearch(text) {
+  searchTerm = text.trim();
+  loadCatalog();
+}
+
+// ---- Catalog search box: search while typing ----
+// Debounce: wait 300 ms after the last key press before calling the API,
+// so typing "boeing" sends 1 request instead of 6.
+catalogSearch.addEventListener("input", () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => applySearch(catalogSearch.value), 300);
+});
+
+// ---- Navbar search: press Enter to search the catalog ----
+navSearchForm.addEventListener("submit", (event) => {
+  event.preventDefault();                       // stop the page from reloading
+
+  catalogSearch.value = navSearchInput.value;   // copy text into catalog search
+  applySearch(navSearchInput.value);
+
+  document.getElementById("catalog").scrollIntoView({ behavior: "smooth" });
+});
+
+// Load all mods when the page opens
 loadCatalog();

@@ -79,7 +79,7 @@
 
       <!-- Right side: search bar + cart -->
       <div class="nav-actions">
-        <form class="nav-search" role="search">
+        <form class="nav-search" id="nav-search" role="search">
           <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
           </svg>
@@ -380,6 +380,14 @@
             Browse every add-on available on FlySkyMods, from free community
             liveries to premium study-level aircraft.
           </p>
+        </div>
+
+        <!-- Catalog search: sends the text to the API as /api/mods?search=... -->
+        <div class="catalog-search">
+          <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input type="search" id="catalog-search" placeholder="Search by mod name, developer or description..." aria-label="Search the mod catalog" autocomplete="off">
         </div>
 
         <!-- Results bar: shows how many mods are displayed -->
