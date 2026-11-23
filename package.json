@@ -4,7 +4,14 @@
   "description": "FlySkyMods - Microsoft Flight Simulator Mods Marketplace",
   "main": "server.js",
   "scripts": {},
-  "keywords": ["flight-simulator", "mods", "marketplace"],
+  "keywords": [
+    "flight-simulator",
+    "mods",
+    "marketplace"
+  ],
   "author": "Satvik and Yash",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.3.0"
+  }
 }
