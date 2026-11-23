@@ -355,3 +355,154 @@ ul {
   font-weight: 600;
   font-size: 0.85rem;
 }
+
+/* ---------- 6. Shared section layout ---------- */
+.section {
+  padding: 5rem 1.5rem;
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 3rem;
+}
+
+.section-eyebrow {
+  color: var(--color-accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.section-title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  margin: 0.5rem 0 0.75rem;
+}
+
+.section-subtitle {
+  color: var(--color-text-muted);
+}
+
+/* ---------- 7. Mod cards ---------- */
+.mod-grid {
+  display: grid;
+  /* As many 260px+ columns as fit - automatically responsive */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.mod-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  transition: transform var(--transition), border-color var(--transition),
+              box-shadow var(--transition);
+}
+
+.mod-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Thumbnail area */
+.mod-card-image {
+  position: relative;
+  height: 170px;
+  display: grid;
+  place-items: center;
+}
+
+.mod-icon {
+  font-size: 3.5rem;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+  transition: transform var(--transition);
+}
+
+.mod-card:hover .mod-icon {
+  transform: scale(1.12);
+}
+
+/* One gradient "thumbnail" per category */
+.thumb-aircraft { background: linear-gradient(135deg, #1e3a8a, #38bdf8); }
+.thumb-airport  { background: linear-gradient(135deg, #312e81, #a855f7); }
+.thumb-livery   { background: linear-gradient(135deg, #9a3412, #f59e0b); }
+.thumb-scenery  { background: linear-gradient(135deg, #064e3b, #10b981); }
+
+/* Free / premium price badges */
+.badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.badge-free {
+  background: rgba(34, 197, 94, 0.25);
+  color: #86efac;
+}
+
+.badge-premium {
+  background: rgba(245, 181, 68, 0.25);
+  color: #fcd34d;
+}
+
+/* Card text */
+.mod-card-body {
+  flex: 1;                        /* fills height so buttons line up */
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+}
+
+.mod-category {
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.mod-title {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  margin: 0.35rem 0 0.2rem;
+}
+
+.mod-author {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.mod-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.downloads {
+  color: var(--color-text-muted);
+}
+
+.btn-card {
+  margin-top: auto;               /* pushes button to card bottom */
+  text-align: center;
+  border-radius: 10px;
+}
