@@ -55,8 +55,9 @@ app.get("/api/health", (req, res) => {
 //   /api/mods?category=Aircraft
 //   /api/mods?search=a320
 //   /api/mods?category=Aircraft&search=boeing
+//   /api/mods?price=free   or   /api/mods?price=paid
 app.get("/api/mods", (req, res) => {
-  const { category, search } = req.query;
+  const { category, search, price } = req.query;
 
   let result = mods;
 
@@ -74,6 +75,12 @@ app.get("/api/mods", (req, res) => {
         m.description.toLowerCase().includes(term) ||
         m.developer.toLowerCase().includes(term)
     );
+  }
+
+  if (price === "free") {
+    result = result.filter((m) => m.price === 0);
+  } else if (price === "paid") {
+    result = result.filter((m) => m.price > 0);
   }
 
   res.json(result);
