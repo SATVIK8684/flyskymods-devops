@@ -28,4 +28,11 @@ describe("FlySkyMods API", () => {
     expect(res.body.id).toBe(1);
     expect(res.body.name).toBe("A320 Neo Pro");
   });
+
+  test("GET /api/mods/:id returns 404 for a missing mod", async () => {
+    const res = await request(app).get("/api/mods/999");
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body.error).toBe("Mod not found");
+  });
 });
