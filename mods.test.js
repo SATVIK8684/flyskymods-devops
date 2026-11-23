@@ -9,4 +9,15 @@ describe("FlySkyMods API", () => {
     expect(res.body.status).toBe("ok");
     expect(res.body.app).toBe("FlySkyMods");
   });
+
+  test("GET /api/mods returns all mods", async () => {
+    const res = await request(app).get("/api/mods");
+
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(8);
+    expect(res.body[0]).toHaveProperty("name");
+    expect(res.body[0]).toHaveProperty("category");
+    expect(res.body[0]).toHaveProperty("price");
+  });
 });
