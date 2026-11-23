@@ -116,6 +116,11 @@ app.post("/api/mods", (req, res) => {
   res.status(201).json(newMod);
 });
 
+// Any /api request that did not match a route above gets a JSON 404
+app.use("/api", (req, res) => {
+  res.status(404).json({ error: "API route not found" });
+});
+
 // Only start listening when run directly with "node server.js".
 // Tests will import `app` without opening a real port.
 if (require.main === module) {
