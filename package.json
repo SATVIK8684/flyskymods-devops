@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "FlySkyMods - Microsoft Flight Simulator Mods Marketplace",
   "main": "server.js",
-  "scripts": {},
+  "scripts": {
+    "start": "node server.js"
+  },
   "keywords": [
     "flight-simulator",
     "mods",
