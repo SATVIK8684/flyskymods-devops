@@ -35,4 +35,15 @@ describe("FlySkyMods API", () => {
     expect(res.statusCode).toBe(404);
     expect(res.body.error).toBe("Mod not found");
   });
+
+  test("POST /api/mods rejects invalid mod data", async () => {
+    const res = await request(app)
+      .post("/api/mods")
+      .send({ name: "", category: "Boats", price: -5 });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe("Invalid mod data");
+    expect(res.body.details).toContain("name is required");
+    expect(res.body.details).toContain("price must be a number 0 or greater");
+  });
 });
