@@ -1,30 +1,33 @@
 /* =========================================================
    FlySkyMods - Main Stylesheet
-   Dark luxury aviation theme
+   Dark luxury aviation theme (deep purple night + gold)
    ========================================================= */
 
 /* ---------- 1. Design tokens (CSS variables) ----------
    Colours and sizes are defined once here and reused
    everywhere, so the whole theme can be changed in one place. */
 :root {
-  --color-bg: #070b14;            /* deep night-sky background */
-  --color-bg-soft: #0e1525;       /* slightly lighter panels */
-  --color-surface: rgba(255, 255, 255, 0.05);  /* glass cards */
-  --color-border: rgba(255, 255, 255, 0.10);
-  --color-text: #e8edf7;
-  --color-text-muted: #8a96ad;
-  --color-primary: #38bdf8;       /* sky blue */
-  --color-primary-dark: #0ea5e9;
-  --color-accent: #f5b544;        /* gold - premium feel */
+  --color-bg: #0c0818;            /* deep purple night sky */
+  --color-bg-soft: #151027;       /* slightly lighter panels */
+  --color-surface: rgba(255, 255, 255, 0.06);  /* glass cards */
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-text: #f5f2fa;
+  --color-text-muted: #b9b0cc;
+  --color-primary: #e9b960;       /* luxury gold */
+  --color-primary-dark: #c99634;
+  --color-accent: #e3a6d6;        /* soft sunset pink */
 
-  --gradient-primary: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+  --gradient-primary: linear-gradient(135deg, #f7d88f 0%, #e3a94a 100%);
+  --gradient-sunset: linear-gradient(90deg, #f2c46d 0%, #e7a4c9 100%);
 
   --font-body: "Inter", system-ui, sans-serif;
-  --font-heading: "Space Grotesk", "Inter", sans-serif;
+  --font-heading: "Playfair Display", Georgia, serif;
+  --font-script: "Great Vibes", cursive;
 
   --radius: 14px;
-  --nav-height: 72px;
+  --nav-height: 82px;
   --max-width: 1200px;
+  --nav-max-width: 1440px;
   --transition: 0.25s ease;
 }
 
@@ -58,21 +61,33 @@ ul {
   list-style: none;
 }
 
+/* Shared style for all inline line-icons (SVG) */
+svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 /* ---------- 3. Reusable button ---------- */
 .btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
   padding: 0.65rem 1.4rem;
-  border-radius: 999px;
+  border-radius: 12px;
   font-weight: 600;
   font-size: 0.95rem;
   background: var(--gradient-primary);
-  color: #fff;
+  color: #1d1408;                 /* dark text on gold */
   transition: transform var(--transition), box-shadow var(--transition);
 }
 
 .btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.35);
+  box-shadow: 0 10px 30px rgba(233, 185, 96, 0.35);
 }
 
 /* ---------- 4. Header & navigation bar ---------- */
@@ -80,73 +95,88 @@ ul {
   position: sticky;               /* stays at top while scrolling */
   top: 0;
   z-index: 100;
-  background: rgba(7, 11, 20, 0.7);
-  backdrop-filter: blur(14px);    /* glassmorphism effect */
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(12, 8, 24, 0.55);
+  backdrop-filter: blur(16px);    /* glassmorphism effect */
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--color-border);
 }
 
 .navbar {
-  max-width: var(--max-width);
+  max-width: var(--nav-max-width);
   height: var(--nav-height);
   margin: 0 auto;
-  padding: 0 1.5rem;
-  display: flex;                  /* logo | links | button in one row */
+  padding: 0 2rem;
+  display: flex;                  /* logo | links | actions in one row */
   align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
+  gap: 2.5rem;
 }
 
 /* Logo */
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-heading);
-  font-size: 1.4rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  gap: 0.85rem;
+  flex-shrink: 0;
 }
 
 .logo-icon {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: var(--gradient-primary);
-  font-size: 1.1rem;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #2a1f14, #120c1c);
+  border: 1px solid rgba(233, 185, 96, 0.35);
+  color: var(--color-primary);
 }
 
-.logo-accent {
-  color: var(--color-primary);
+.logo-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.logo-name {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.logo-tagline {
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }
 
 /* Navigation links */
 .nav-links {
   display: flex;
+  align-items: center;
   gap: 2rem;
   margin-left: auto;
 }
 
+.nav-links > li {
+  position: relative;             /* dropdown is positioned against this */
+}
+
 .nav-links a {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   color: var(--color-text-muted);
   font-weight: 500;
   font-size: 0.95rem;
+  padding: 0.5rem 0;
   transition: color var(--transition);
-}
-
-/* Animated underline on hover / active link */
-.nav-links a::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -6px;
-  width: 0;
-  height: 2px;
-  background: var(--gradient-primary);
-  transition: width var(--transition);
 }
 
 .nav-links a:hover,
@@ -154,9 +184,151 @@ ul {
   color: var(--color-text);
 }
 
-.nav-links a:hover::after,
-.nav-links a.active::after {
+/* Gold underline under the active link */
+.nav-links > li > a.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
   width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-primary);
+}
+
+.chevron {
+  width: 14px;
+  height: 14px;
+  transition: transform var(--transition);
+}
+
+/* Dropdown menus - hidden until the parent item is hovered or focused */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: -1rem;
+  min-width: 190px;
+  padding: 0.5rem;
+  border-radius: 12px;
+  background: rgba(21, 16, 39, 0.95);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity var(--transition), transform var(--transition),
+              visibility var(--transition);
+}
+
+/* Invisible bridge so the menu doesn't close while moving the mouse down */
+.dropdown::before {
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: 0;
+  right: 0;
+  height: 14px;
+}
+
+.dropdown a {
+  display: block;
+  padding: 0.55rem 0.9rem;
+  border-radius: 8px;
+}
+
+.dropdown a:hover {
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+
+.has-dropdown:hover .dropdown,
+.has-dropdown:focus-within .dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.has-dropdown:hover .chevron {
+  transform: rotate(180deg);
+}
+
+/* Right-side actions: search + cart */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.nav-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.nav-search input {
+  width: 290px;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.nav-search input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.nav-search input:focus {
+  border-color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.cart-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  color: var(--color-text);
+  transition: color var(--transition);
+}
+
+.cart-btn:hover {
+  color: var(--color-primary);
+}
+
+.cart-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.cart-count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #2a2340;
+  border: 1px solid var(--color-border);
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
 }
 
 /* Mobile menu (hamburger) button - hidden on desktop,
@@ -411,7 +583,7 @@ ul {
 
 .mod-card:hover {
   transform: translateY(-6px);
-  border-color: rgba(56, 189, 248, 0.5);
+  border-color: rgba(233, 185, 96, 0.5);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
