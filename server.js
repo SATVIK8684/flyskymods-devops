@@ -21,6 +21,31 @@ const mods = [
   { id: 8, name: "Cessna 172 HD Panel", category: "Aircraft", price: 0, developer: "GA Mods", description: "Free HD cockpit upgrade for the Cessna 172.", rating: 4.1, downloads: 14050 }
 ];
 
+// Allowed mod categories
+const CATEGORIES = ["Aircraft", "Liveries", "Airports", "Scenery", "Utilities", "Enhancements"];
+
+// Checks new mod data and returns a list of error messages (empty list = valid)
+function validateMod(data) {
+  const errors = [];
+  const requiredText = ["name", "category", "developer", "description"];
+
+  requiredText.forEach((field) => {
+    if (typeof data[field] !== "string" || data[field].trim() === "") {
+      errors.push(`${field} is required`);
+    }
+  });
+
+  if (data.category && !CATEGORIES.includes(data.category)) {
+    errors.push(`category must be one of: ${CATEGORIES.join(", ")}`);
+  }
+
+  if (typeof data.price !== "number" || data.price < 0) {
+    errors.push("price must be a number 0 or greater");
+  }
+
+  return errors;
+}
+
 // Health check route: confirms the server is alive
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", app: "FlySkyMods" });
@@ -68,15 +93,21 @@ app.get("/api/mods/:id", (req, res) => {
 
 // Creates a new mod from the JSON request body
 app.post("/api/mods", (req, res) => {
-  const { name, category, price, developer, description } = req.body;
+  const body = req.body || {};
+  const { name, category, price, developer, description } = body;
+
+  const errors = validateMod(body);
+  if (errors.length > 0) {
+    return res.status(400).json({ error: "Invalid mod data", details: errors });
+  }
 
   const newMod = {
     id: mods.length ? Math.max(...mods.map((m) => m.id)) + 1 : 1,
-    name,
+    name: name.trim(),
     category,
-    price: Number(price) || 0,
-    developer,
-    description,
+    price,
+    developer: developer.trim(),
+    description: description.trim(),
     rating: 0,
     downloads: 0
   };
