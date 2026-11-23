@@ -1234,3 +1234,23 @@ svg {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* Message shown inside the catalog grid (errors, no results) */
+.catalog-message {
+  grid-column: 1 / -1;            /* spans the full width of the grid */
+  padding: 3rem 1.5rem;
+  text-align: center;
+  border-radius: var(--radius);
+  border: 1px dashed var(--color-border);
+  background: var(--color-surface);
+}
+
+.catalog-message h3 {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.catalog-message p {
+  color: var(--color-text-muted);
+}
