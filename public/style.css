@@ -1141,3 +1141,116 @@ svg {
   color: #7d7491;
   font-size: 0.82rem;
 }
+
+/* ---------- 11. Mod catalog ---------- */
+.catalog-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.75rem;
+  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.catalog-count {
+  font-weight: 500;
+}
+
+/* Small "live" label with a pulsing green dot */
+.catalog-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.catalog-source::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.6);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.6); }
+  70%  { box-shadow: 0 0 0 8px rgba(74, 222, 128, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+}
+
+/* Skeleton loading cards: grey blocks shaped like a real mod card */
+.skeleton-card {
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+}
+
+/* Shimmer effect: a light band slides across each grey block */
+.skeleton {
+  border-radius: 8px;
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.05) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-image {
+  height: 170px;
+  border-radius: 0;
+}
+
+.skeleton-line {
+  height: 14px;
+  width: 100%;
+}
+
+.skeleton-line.short  { width: 35%; }
+.skeleton-line.medium { width: 60%; }
+
+.skeleton-button {
+  height: 40px;
+  margin-top: 0.5rem;
+  border-radius: 10px;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Message shown inside the catalog grid (errors, no results) */
+.catalog-message {
+  grid-column: 1 / -1;            /* spans the full width of the grid */
+  padding: 3rem 1.5rem;
+  text-align: center;
+  border-radius: var(--radius);
+  border: 1px dashed var(--color-border);
+  background: var(--color-surface);
+}
+
+.catalog-message h3 {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.catalog-message p {
+  color: var(--color-text-muted);
+}
