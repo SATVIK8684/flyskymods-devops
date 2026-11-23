@@ -7,9 +7,22 @@
 // Express server serves both the website (public/) and the API (/api).
 const API_URL = "/api/mods";
 
-// References to the catalog elements in index.html
+// References to elements in index.html
 const catalogGrid = document.getElementById("catalog-grid");
 const catalogCount = document.getElementById("catalog-count");
+const catalogSearch = document.getElementById("catalog-search");
+const navSearchForm = document.getElementById("nav-search");
+const navSearchInput = document.getElementById("nav-search-input");
+
+// Current search text typed by the user
+let searchTerm = "";
+
+// Counts requests so that only the newest response is displayed
+// (a slow old response must not overwrite a newer search result)
+let latestRequestId = 0;
+
+// Timer used to "debounce" typing (wait until the user pauses)
+let searchTimer = null;
 
 // Visual style for each category: thumbnail gradient class + icon.
 // Category names match the backend's CATEGORIES list in server.js.
@@ -26,12 +39,28 @@ const CATEGORY_STYLES = {
 const DEFAULT_STYLE = { thumb: "thumb-aircraft", icon: "✈️" };
 
 /**
+ * Builds the API URL with optional query parameters.
+ *   no search      -> /api/mods
+ *   search "boeing" -> /api/mods?search=boeing
+ */
+function buildApiUrl() {
+  const params = new URLSearchParams();
+
+  if (searchTerm) {
+    params.set("search", searchTerm);
+  }
+
+  const query = params.toString();
+  return query ? `${API_URL}?${query}` : API_URL;
+}
+
+/**
  * Fetches the list of mods from the backend API.
  * Returns an array of mod objects, e.g.
  *   [{ id: 1, name: "A320 Neo Pro", category: "Aircraft", price: 24.99, ... }]
  */
 async function fetchMods() {
-  const response = await fetch(API_URL);
+  const response = await fetch(buildApiUrl());
 
   // fetch() only throws on network errors, so check the HTTP status too
   if (!response.ok) {
@@ -101,18 +130,31 @@ function createModCard(mod) {
 }
 
 /**
- * Replaces the skeleton cards with real mod cards.
+ * Replaces the grid content with real mod cards,
+ * or a "no results" message when the list is empty.
  */
 function renderMods(mods) {
+  if (mods.length === 0) {
+    catalogGrid.innerHTML = `
+      <div class="catalog-message">
+        <h3>No mods found</h3>
+        <p>Nothing matches "${escapeHTML(searchTerm)}". Try a different search.</p>
+      </div>
+    `;
+    return;
+  }
+
   catalogGrid.innerHTML = mods.map(createModCard).join("");
 }
 
 /**
- * Updates the results bar text, e.g. "Showing 8 mods".
+ * Updates the results bar text, e.g. "Showing 8 mods"
+ * or 'Showing 2 mods for "boeing"'.
  */
 function updateCount(total) {
   const label = total === 1 ? "mod" : "mods";
-  catalogCount.textContent = `Showing ${total} ${label}`;
+  const suffix = searchTerm ? ` for "${searchTerm}"` : "";
+  catalogCount.textContent = `Showing ${total} ${label}${suffix}`;
 }
 
 /**
@@ -129,11 +171,17 @@ function showError(message) {
 }
 
 /**
- * Loads mods from the API and displays them when the page opens.
+ * Loads mods from the API (using the current search) and displays them.
  */
 async function loadCatalog() {
+  const requestId = ++latestRequestId;
+
   try {
     const mods = await fetchMods();
+
+    // Ignore this response if a newer search has started meanwhile
+    if (requestId !== latestRequestId) return;
+
     renderMods(mods);
     updateCount(mods.length);
   } catch (error) {
@@ -142,4 +190,31 @@ async function loadCatalog() {
   }
 }
 
+/**
+ * Sets the search text and reloads the catalog.
+ */
+function applySearch(text) {
+  searchTerm = text.trim();
+  loadCatalog();
+}
+
+// ---- Catalog search box: search while typing ----
+// Debounce: wait 300 ms after the last key press before calling the API,
+// so typing "boeing" sends 1 request instead of 6.
+catalogSearch.addEventListener("input", () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => applySearch(catalogSearch.value), 300);
+});
+
+// ---- Navbar search: press Enter to search the catalog ----
+navSearchForm.addEventListener("submit", (event) => {
+  event.preventDefault();                       // stop the page from reloading
+
+  catalogSearch.value = navSearchInput.value;   // copy text into catalog search
+  applySearch(navSearchInput.value);
+
+  document.getElementById("catalog").scrollIntoView({ behavior: "smooth" });
+});
+
+// Load all mods when the page opens
 loadCatalog();
