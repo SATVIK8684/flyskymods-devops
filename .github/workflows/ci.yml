@@ -1,0 +1,49 @@
+# =========================================================
+# FlySkyMods - Continuous Integration (CI) workflow
+# Runs the automated Jest + Supertest tests on GitHub's
+# servers every time code is pushed or a Pull Request is opened.
+# =========================================================
+
+name: FlySkyMods CI
+
+# ---- WHEN the workflow runs (triggers) ----
+on:
+  push:
+    branches:
+      - main
+      - "feature/**"   # any feature branch, e.g. feature/search-filter
+      - "docs/**"
+  pull_request:
+    branches:
+      - main           # PRs that want to merge into main
+
+# Give the workflow read-only access to the repository (safer default)
+permissions:
+  contents: read
+
+# ---- WHAT the workflow does ----
+jobs:
+  test:
+    name: Run automated tests
+    runs-on: ubuntu-latest   # a fresh Linux virtual machine (the "runner")
+
+    steps:
+      # 1. Download the repository code onto the runner
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Install Node.js (same major version we will use in production)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"         # re-use downloaded packages to speed up runs
+
+      # 3. Install exact dependency versions from package-lock.json
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Run Jest + Supertest. If any test fails, this step fails
+      #    and the whole workflow is marked FAIL (red X).
+      - name: Run automated tests
+        run: npm test
