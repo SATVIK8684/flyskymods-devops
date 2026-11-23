@@ -26,9 +26,31 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", app: "FlySkyMods" });
 });
 
-// ---- NEW: returns all mods ----
+// Returns all mods. Optional filter: /api/mods?category=Aircraft
 app.get("/api/mods", (req, res) => {
-  res.json(mods);
+  const { category } = req.query;
+
+  let result = mods;
+
+  if (category) {
+    result = result.filter(
+      (m) => m.category.toLowerCase() === category.toLowerCase()
+    );
+  }
+
+  res.json(result);
+});
+
+// NEW: returns one mod by its id, or 404 if it doesn't exist
+app.get("/api/mods/:id", (req, res) => {
+  const id = Number(req.params.id);
+  const mod = mods.find((m) => m.id === id);
+
+  if (!mod) {
+    return res.status(404).json({ error: "Mod not found" });
+  }
+
+  res.json(mod);
 });
 
 // Only start listening when run directly with "node server.js".
