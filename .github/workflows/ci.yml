@@ -47,3 +47,45 @@ jobs:
       #    and the whole workflow is marked FAIL (red X).
       - name: Run automated tests
         run: npm test
+
+  # =======================================================
+  # CONTINUOUS DEPLOYMENT (CD)
+  # Runs ONLY when:
+  #   1. code is pushed/merged into main, AND
+  #   2. the "test" job above has passed.
+  # It copies the tested main branch to the "production" branch.
+  # Hostinger watches the production branch and redeploys
+  # flyskymods.com automatically whenever it changes.
+  # If tests fail, this job is skipped and the live site
+  # stays on the last working version.
+  # =======================================================
+  deploy:
+    name: Deploy to production
+    needs: test                 # wait for tests; skip if they fail
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    # This job needs permission to update the production branch
+    permissions:
+      contents: write
+
+    # Never run two deployments at the same time
+    concurrency: production
+
+    steps:
+      # 1. Download the tested main branch
+      - name: Checkout tested code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. Make the production branch identical to main
+      - name: Update production branch
+        run: git push origin HEAD:production --force
+
+      # 3. Print a summary on the Actions run page
+      - name: Deployment summary
+        run: |
+          echo "### 🚀 Deployed to production" >> $GITHUB_STEP_SUMMARY
+          echo "Commit: \`${GITHUB_SHA::7}\`" >> $GITHUB_STEP_SUMMARY
+          echo "Hostinger will now redeploy https://flyskymods.com" >> $GITHUB_STEP_SUMMARY
