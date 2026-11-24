@@ -1480,3 +1480,352 @@ body:has(.mod-dialog[open]) {
   text-align: center;
   color: var(--color-text-muted);
 }
+
+/* ---------- 13. Wishlist ---------- */
+/* Heart button in the top-left corner of each catalog card */
+.wish-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(12, 8, 24, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  cursor: pointer;
+  transition: transform var(--transition), background var(--transition);
+}
+
+.wish-btn:hover {
+  transform: scale(1.1);
+}
+
+.wish-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Saved: heart filled with pink */
+.wish-btn.saved {
+  background: rgba(236, 72, 153, 0.25);
+  border-color: rgba(244, 114, 182, 0.7);
+  color: #f472b6;
+}
+
+.wish-btn.saved svg {
+  fill: currentColor;
+}
+
+/* "♥ Saved" chip uses pink instead of gold when active */
+.chip-saved.active {
+  background: linear-gradient(135deg, #f9a8d4, #ec4899);
+  color: #2a0a1a;
+}
+
+/* ---------- 14. Responsive navigation ---------- */
+/* Nav labels never wrap onto two lines */
+.nav-links a {
+  white-space: nowrap;
+}
+
+/* Hamburger lines animate into an X when the menu is open */
+.nav-toggle {
+  width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-toggle span {
+  transition: transform var(--transition), opacity var(--transition);
+}
+
+/* Medium screens (small laptops): tighten spacing, shorter search box */
+@media (max-width: 1360px) {
+  .navbar {
+    gap: 1.75rem;
+    padding: 0 1.5rem;
+  }
+
+  .nav-links {
+    gap: 1.5rem;
+  }
+
+  .nav-search input {
+    width: 210px;
+  }
+}
+
+/* Tablets and phones: links move into a slide-down menu panel */
+@media (max-width: 1100px) {
+  .navbar {
+    position: relative;           /* the menu panel is positioned against this */
+    gap: 1rem;
+  }
+
+  .nav-toggle {
+    display: flex;
+  }
+
+  /* The catalog has its own search box, so the navbar one is hidden */
+  .nav-search {
+    display: none;
+  }
+
+  .nav-actions {
+    margin-left: auto;
+    gap: 0.5rem;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    margin: 0;
+    padding: 0.5rem 1.5rem 1.25rem;
+    background: var(--color-bg);   /* solid, so the page behind does not show through */
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+    /* hidden until the hamburger is clicked */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity var(--transition), transform var(--transition),
+                visibility var(--transition);
+  }
+
+  .navbar.nav-open .nav-links {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .nav-links > li > a {
+    display: flex;
+    width: 100%;
+    padding: 0.95rem 0;
+    font-size: 1.05rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .nav-links > li:last-child > a {
+    border-bottom: none;
+  }
+
+  /* No hover dropdowns or underline on touch screens */
+  .dropdown,
+  .chevron,
+  .nav-links > li > a.active::after {
+    display: none;
+  }
+
+  .nav-links > li > a.active {
+    color: var(--color-primary);
+  }
+
+  /* Hamburger -> X */
+  .nav-open .nav-toggle span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .nav-open .nav-toggle span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .nav-open .nav-toggle span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+}
+
+/* Small phones: hide the logo tagline to save space */
+@media (max-width: 420px) {
+  .logo-tagline {
+    display: none;
+  }
+}
+
+/* ---------- 15. Responsive layout (tablets & phones) ---------- */
+
+/* Tablets and small laptops */
+@media (max-width: 1100px) {
+  .hero {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  /* Corner captions would overlap the headline on narrower screens */
+  .hero-location,
+  .hero-signature {
+    display: none;
+  }
+
+  /* Keep the runway sign inside the screen */
+  .runway-sign {
+    left: 0;
+  }
+
+  /* Feature strip: 4 columns -> 2 x 2 grid */
+  .hero-features {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hero-features li:nth-child(odd) {
+    border-left: none;
+  }
+
+  .hero-features li:nth-child(n + 3) {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Bottom bar: only the scroll indicator (the side texts do not fit) */
+  .hero-bottom {
+    justify-content: center;
+  }
+
+  .hero-bottom .bottom-text,
+  .hero-bottom .bottom-line {
+    display: none;
+  }
+
+  /* Contact: text above the form instead of side by side */
+  .contact-layout {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  /* Footer: brand on its own row, link columns below */
+  .footer-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Phones */
+@media (max-width: 640px) {
+  .section {
+    padding: 3.5rem 1rem;
+  }
+
+  /* Hero: darker top-to-bottom fade and the plane kept in view */
+  .hero {
+    padding: calc(var(--nav-height) + 2rem) 1.25rem 1.25rem;
+    background:
+      linear-gradient(180deg, rgba(12, 8, 24, 0.8) 0%, rgba(12, 8, 24, 0.45) 50%, var(--color-bg) 100%),
+      url("images/hero-aircraft.png") 62% center / cover no-repeat,
+      var(--color-bg);
+  }
+
+  .hero-eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 2px;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero-eyebrow span {
+    margin: 0 0.3rem;
+  }
+
+  .title-line {
+    white-space: normal;          /* allow "Flight Experience" to wrap */
+  }
+
+  .hero-divider {
+    margin: 1.25rem 0;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .hero-subtitle br {
+    display: none;
+  }
+
+  /* Full-width stacked buttons are easier to tap */
+  .hero-actions {
+    flex-direction: column;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .hero-text {
+    padding-bottom: 2rem;
+  }
+
+  .runway-sign {
+    display: none;
+  }
+
+  /* Feature strip: one item per row */
+  .hero-features {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-features li {
+    padding: 1rem 1.25rem;
+    border-left: none !important;
+  }
+
+  .hero-features li + li {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .feature-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  /* Catalog results bar stacks vertically */
+  .catalog-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .category-card {
+    padding: 1.5rem;
+  }
+
+  /* Contact form: one field per row */
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-form {
+    padding: 1.5rem;
+  }
+
+  /* Footer: single column */
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+  }
+
+  /* Details popup */
+  .dialog-body {
+    padding: 1.5rem 1.25rem 1.5rem;
+  }
+
+  .dialog-title {
+    font-size: 1.5rem;
+  }
+}
