@@ -401,6 +401,13 @@
           <button type="button" class="chip" data-category="Enhancements">Enhancements</button>
         </div>
 
+        <!-- Price filter: sends /api/mods?price=free or ?price=paid -->
+        <div class="filter-chips price-filters" id="price-filters" role="group" aria-label="Filter mods by price">
+          <button type="button" class="chip chip-small active" data-price="">All prices</button>
+          <button type="button" class="chip chip-small" data-price="free">Free</button>
+          <button type="button" class="chip chip-small" data-price="paid">Paid</button>
+        </div>
+
         <!-- Results bar: shows how many mods are displayed -->
         <div class="catalog-bar">
           <p class="catalog-count" id="catalog-count">Loading mods...</p>

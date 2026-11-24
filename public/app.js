@@ -14,12 +14,16 @@ const catalogSearch = document.getElementById("catalog-search");
 const navSearchForm = document.getElementById("nav-search");
 const navSearchInput = document.getElementById("nav-search-input");
 const categoryChips = document.querySelectorAll("#category-filters .chip");
+const priceChips = document.querySelectorAll("#price-filters .chip");
 
 // Current search text typed by the user
 let searchTerm = "";
 
 // Currently selected category ("" means All)
 let selectedCategory = "";
+
+// Currently selected price filter: "" (all), "free" or "paid"
+let selectedPrice = "";
 
 // Counts requests so that only the newest response is displayed
 // (a slow old response must not overwrite a newer search result)
@@ -47,6 +51,7 @@ const DEFAULT_STYLE = { thumb: "thumb-aircraft", icon: "✈️" };
  *   nothing selected   -> /api/mods
  *   search "boeing"     -> /api/mods?search=boeing
  *   Aircraft + "boeing" -> /api/mods?category=Aircraft&search=boeing
+ *   Free only           -> /api/mods?price=free
  */
 function buildApiUrl() {
   const params = new URLSearchParams();
@@ -57,6 +62,10 @@ function buildApiUrl() {
 
   if (searchTerm) {
     params.set("search", searchTerm);
+  }
+
+  if (selectedPrice) {
+    params.set("price", selectedPrice);
   }
 
   const query = params.toString();
@@ -158,13 +167,14 @@ function renderMods(mods) {
 
 /**
  * Updates the results bar text, e.g. "Showing 8 mods",
- * "Showing 3 Aircraft mods" or 'Showing 1 Aircraft mod for "boeing"'.
+ * "Showing 2 free Aircraft mods" or 'Showing 1 Aircraft mod for "boeing"'.
  */
 function updateCount(total) {
   const label = total === 1 ? "mod" : "mods";
+  const price = selectedPrice ? `${selectedPrice} ` : "";
   const category = selectedCategory ? `${selectedCategory} ` : "";
   const suffix = searchTerm ? ` for "${searchTerm}"` : "";
-  catalogCount.textContent = `Showing ${total} ${category}${label}${suffix}`;
+  catalogCount.textContent = `Showing ${total} ${price}${category}${label}${suffix}`;
 }
 
 /**
@@ -209,18 +219,33 @@ function applySearch(text) {
 }
 
 /**
+ * Highlights the chip whose data value matches, and un-highlights the rest.
+ * Shared by the category chips and the price chips.
+ */
+function highlightChip(chips, key, value) {
+  chips.forEach((chip) => {
+    const isActive = chip.dataset[key] === value;
+    chip.classList.toggle("active", isActive);
+    chip.setAttribute("aria-pressed", isActive);
+  });
+}
+
+/**
  * Selects a category, highlights the matching chip and reloads the catalog.
  * An empty string means "All".
  */
 function applyCategory(category) {
   selectedCategory = category;
+  highlightChip(categoryChips, "category", category);
+  loadCatalog();
+}
 
-  categoryChips.forEach((chip) => {
-    const isActive = chip.dataset.category === category;
-    chip.classList.toggle("active", isActive);
-    chip.setAttribute("aria-pressed", isActive);
-  });
-
+/**
+ * Selects a price filter ("", "free" or "paid") and reloads the catalog.
+ */
+function applyPrice(price) {
+  selectedPrice = price;
+  highlightChip(priceChips, "price", price);
   loadCatalog();
 }
 
@@ -231,6 +256,11 @@ function applyCategory(category) {
 // scrolls down to the catalog for them.)
 document.querySelectorAll("[data-category]").forEach((element) => {
   element.addEventListener("click", () => applyCategory(element.dataset.category));
+});
+
+// ---- Price filters: All prices / Free / Paid ----
+priceChips.forEach((chip) => {
+  chip.addEventListener("click", () => applyPrice(chip.dataset.price));
 });
 
 // ---- Catalog search box: search while typing ----

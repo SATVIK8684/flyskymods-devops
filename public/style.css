@@ -1340,3 +1340,13 @@ svg {
   color: #1d1408;
   font-weight: 600;
 }
+
+/* Price filter: smaller chips in a second row */
+.price-filters {
+  margin-top: -0.5rem;
+}
+
+.chip-small {
+  padding: 0.4rem 1rem;
+  font-size: 0.82rem;
+}
