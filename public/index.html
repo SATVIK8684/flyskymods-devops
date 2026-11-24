@@ -47,9 +47,9 @@
             <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
           </a>
           <ul class="dropdown">
-            <li><a href="#catalog">Aircraft</a></li>
-            <li><a href="#catalog">Airports</a></li>
-            <li><a href="#catalog">Scenery</a></li>
+            <li><a href="#catalog" data-category="Aircraft">Aircraft</a></li>
+            <li><a href="#catalog" data-category="Airports">Airports</a></li>
+            <li><a href="#catalog" data-category="Scenery">Scenery</a></li>
           </ul>
         </li>
 
@@ -58,8 +58,8 @@
             <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
           </a>
           <ul class="dropdown">
-            <li><a href="#catalog">Airline Liveries</a></li>
-            <li><a href="#catalog">Custom Liveries</a></li>
+            <li><a href="#catalog" data-category="Liveries">Airline Liveries</a></li>
+            <li><a href="#catalog" data-category="Liveries">Custom Liveries</a></li>
           </ul>
         </li>
 
@@ -68,8 +68,8 @@
             <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
           </a>
           <ul class="dropdown">
-            <li><a href="#catalog">Utilities</a></li>
-            <li><a href="#catalog">Enhancement Mods</a></li>
+            <li><a href="#catalog" data-category="Utilities">Utilities</a></li>
+            <li><a href="#catalog" data-category="Enhancements">Enhancement Mods</a></li>
           </ul>
         </li>
 
@@ -390,6 +390,24 @@
           <input type="search" id="catalog-search" placeholder="Search by mod name, developer or description..." aria-label="Search the mod catalog" autocomplete="off">
         </div>
 
+        <!-- Category filter chips: sends /api/mods?category=... -->
+        <div class="filter-chips" id="category-filters" role="group" aria-label="Filter mods by category">
+          <button type="button" class="chip active" data-category="">All</button>
+          <button type="button" class="chip" data-category="Aircraft">Aircraft</button>
+          <button type="button" class="chip" data-category="Liveries">Liveries</button>
+          <button type="button" class="chip" data-category="Airports">Airports</button>
+          <button type="button" class="chip" data-category="Scenery">Scenery</button>
+          <button type="button" class="chip" data-category="Utilities">Utilities</button>
+          <button type="button" class="chip" data-category="Enhancements">Enhancements</button>
+        </div>
+
+        <!-- Price filter: sends /api/mods?price=free or ?price=paid -->
+        <div class="filter-chips price-filters" id="price-filters" role="group" aria-label="Filter mods by price">
+          <button type="button" class="chip chip-small active" data-price="">All prices</button>
+          <button type="button" class="chip chip-small" data-price="free">Free</button>
+          <button type="button" class="chip chip-small" data-price="paid">Paid</button>
+        </div>
+
         <!-- Results bar: shows how many mods are displayed -->
         <div class="catalog-bar">
           <p class="catalog-count" id="catalog-count">Loading mods...</p>
@@ -567,6 +585,16 @@
       <p>Not affiliated with Microsoft. Microsoft Flight Simulator is a trademark of Microsoft Corporation.</p>
     </div>
   </footer>
+
+  <!-- ===== MOD DETAILS POPUP ===== -->
+  <!-- <dialog> is a built-in HTML popup. JavaScript fills #dialog-content
+       with data from GET /api/mods/:id and opens it with showModal(). -->
+  <dialog class="mod-dialog" id="mod-dialog" aria-labelledby="dialog-title">
+    <button type="button" class="dialog-close" id="dialog-close" aria-label="Close details">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+    <div id="dialog-content"></div>
+  </dialog>
 
 </body>
 </html>
