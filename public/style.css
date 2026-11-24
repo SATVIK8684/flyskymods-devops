@@ -1350,3 +1350,133 @@ svg {
   padding: 0.4rem 1rem;
   font-size: 0.82rem;
 }
+
+/* ---------- 12. Mod details popup ---------- */
+.mod-card {
+  cursor: pointer;                /* whole card opens the details popup */
+}
+
+.mod-dialog {
+  width: min(560px, calc(100% - 2rem));
+  max-height: calc(100vh - 2rem);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: var(--color-bg-soft);
+  color: var(--color-text);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  overflow: auto;
+}
+
+/* Dark blurred layer behind the popup */
+.mod-dialog::backdrop {
+  background: rgba(5, 3, 12, 0.7);
+  backdrop-filter: blur(6px);
+}
+
+/* Stop the page behind from scrolling while the popup is open */
+body:has(.mod-dialog[open]) {
+  overflow: hidden;
+}
+
+.mod-dialog[open] {
+  animation: dialog-in 0.25s ease;
+}
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.dialog-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: rgba(12, 8, 24, 0.6);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: border-color var(--transition);
+}
+
+.dialog-close:hover {
+  border-color: var(--color-primary);
+}
+
+.dialog-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+.dialog-banner {
+  height: 180px;
+  display: grid;
+  place-items: center;
+}
+
+.dialog-icon {
+  font-size: 4.5rem;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.35));
+}
+
+.dialog-body {
+  padding: 1.75rem 2rem 2rem;
+}
+
+.dialog-title {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  line-height: 1.2;
+  margin: 0.3rem 0 0.25rem;
+}
+
+.dialog-description {
+  color: var(--color-text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.dialog-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.dialog-stats li {
+  padding: 0.85rem;
+  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.dialog-stats strong {
+  display: block;
+  font-size: 1.1rem;
+  color: var(--color-primary);
+}
+
+.dialog-stats span {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.dialog-note {
+  margin-top: 0.75rem;
+  text-align: center;
+  color: #7d7491;
+  font-size: 0.8rem;
+}
+
+.dialog-loading {
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--color-text-muted);
+}

@@ -15,6 +15,9 @@ const navSearchForm = document.getElementById("nav-search");
 const navSearchInput = document.getElementById("nav-search-input");
 const categoryChips = document.querySelectorAll("#category-filters .chip");
 const priceChips = document.querySelectorAll("#price-filters .chip");
+const modDialog = document.getElementById("mod-dialog");
+const dialogContent = document.getElementById("dialog-content");
+const dialogClose = document.getElementById("dialog-close");
 
 // Current search text typed by the user
 let searchTerm = "";
@@ -141,7 +144,7 @@ function createModCard(mod) {
           <span class="rating">${rating}</span>
           <span class="downloads">${formatDownloads(mod.downloads)} downloads</span>
         </div>
-        <a href="#" class="btn btn-card">${isFree ? "Download" : "Buy Now"}</a>
+        <button type="button" class="btn btn-card">View Details</button>
       </div>
     </article>
   `;
@@ -188,6 +191,76 @@ function showError(message) {
       <p>${message}</p>
     </div>
   `;
+}
+
+/**
+ * Fetches ONE mod by id from the backend: GET /api/mods/:id
+ * The backend returns 404 if the mod does not exist.
+ */
+async function fetchModById(id) {
+  const response = await fetch(`${API_URL}/${id}`);
+
+  if (response.status === 404) {
+    throw new Error("This mod no longer exists.");
+  }
+  if (!response.ok) {
+    throw new Error(`API request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Builds the HTML shown inside the details popup.
+ */
+function createModDetails(mod) {
+  const style = CATEGORY_STYLES[mod.category] || DEFAULT_STYLE;
+  const isFree = mod.price === 0;
+  const price = isFree ? "Free" : `$${mod.price.toFixed(2)}`;
+  const rating = mod.rating > 0 ? mod.rating.toFixed(1) : "New";
+
+  return `
+    <div class="dialog-banner ${style.thumb}">
+      <span class="dialog-icon" aria-hidden="true">${style.icon}</span>
+    </div>
+    <div class="dialog-body">
+      <span class="mod-category">${escapeHTML(mod.category)}</span>
+      <h2 class="dialog-title" id="dialog-title">${escapeHTML(mod.name)}</h2>
+      <p class="mod-author">by ${escapeHTML(mod.developer)}</p>
+      <p class="dialog-description">${escapeHTML(mod.description)}</p>
+
+      <ul class="dialog-stats">
+        <li><strong>★ ${rating}</strong><span>Rating</span></li>
+        <li><strong>${formatDownloads(mod.downloads)}</strong><span>Downloads</span></li>
+        <li><strong>${price}</strong><span>Price</span></li>
+      </ul>
+
+      <button type="button" class="btn btn-lg btn-full">${isFree ? "Download Mod" : `Buy Now · ${price}`}</button>
+      <p class="dialog-note">Demo marketplace: downloads and payments are not enabled.</p>
+    </div>
+  `;
+}
+
+/**
+ * Opens the details popup for a mod.
+ * Data is loaded fresh from the API so it is always up to date.
+ */
+async function openModDetails(id) {
+  dialogContent.innerHTML = `<p class="dialog-loading">Loading mod details...</p>`;
+  modDialog.showModal();                 // built-in <dialog> method
+
+  try {
+    const mod = await fetchModById(id);
+    dialogContent.innerHTML = createModDetails(mod);
+  } catch (error) {
+    console.error(error);
+    dialogContent.innerHTML = `
+      <div class="dialog-body">
+        <h2 class="dialog-title" id="dialog-title">Could not load mod</h2>
+        <p class="dialog-description">${escapeHTML(error.message)}</p>
+      </div>
+    `;
+  }
 }
 
 /**
@@ -262,6 +335,27 @@ document.querySelectorAll("[data-category]").forEach((element) => {
 priceChips.forEach((chip) => {
   chip.addEventListener("click", () => applyPrice(chip.dataset.price));
 });
+
+// ---- Mod details popup ----
+// Event delegation: ONE listener on the grid handles clicks on every card,
+// including cards that are added later when filters change.
+catalogGrid.addEventListener("click", (event) => {
+  const card = event.target.closest(".mod-card");
+  if (card) {
+    openModDetails(card.dataset.id);
+  }
+});
+
+// Close with the X button
+dialogClose.addEventListener("click", () => modDialog.close());
+
+// Close when clicking the dark backdrop outside the popup
+modDialog.addEventListener("click", (event) => {
+  if (event.target === modDialog) {
+    modDialog.close();
+  }
+});
+// (The Escape key closes a <dialog> automatically.)
 
 // ---- Catalog search box: search while typing ----
 // Debounce: wait 300 ms after the last key press before calling the API,
