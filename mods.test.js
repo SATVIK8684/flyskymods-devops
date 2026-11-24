@@ -70,4 +70,15 @@ describe("FlySkyMods API", () => {
     expect(paid.body.length).toBe(5);
     paid.body.forEach((mod) => expect(mod.price).toBeGreaterThan(0));
   });
+
+  test("POST /api/mods returns 400 for invalid JSON", async () => {
+    const res = await request(app)
+      .post("/api/mods")
+      .set("Content-Type", "application/json")
+      .send("{bad json");
+
+    expect(res.statusCode).toBe(400);
+    expect(res.headers["content-type"]).toMatch(/json/);
+    expect(res.body.error).toBe("Invalid JSON in request body");
+  });
 });

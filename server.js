@@ -128,6 +128,17 @@ app.use("/api", (req, res) => {
   res.status(404).json({ error: "API route not found" });
 });
 
+// Error handler: runs when something throws or express.json() gets broken JSON.
+// It has 4 parameters (err, req, res, next) - that is how Express knows it handles errors.
+app.use((err, req, res, next) => {
+  if (err.type === "entity.parse.failed") {
+    return res.status(400).json({ error: "Invalid JSON in request body" });
+  }
+
+  console.error(err);
+  res.status(500).json({ error: "Internal server error" });
+});
+
 // Only start listening when run directly with "node server.js".
 // Tests will import `app` without opening a real port.
 if (require.main === module) {
