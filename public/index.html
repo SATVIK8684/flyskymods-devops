@@ -47,9 +47,9 @@
             <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
           </a>
           <ul class="dropdown">
-            <li><a href="#catalog">Aircraft</a></li>
-            <li><a href="#catalog">Airports</a></li>
-            <li><a href="#catalog">Scenery</a></li>
+            <li><a href="#catalog" data-category="Aircraft">Aircraft</a></li>
+            <li><a href="#catalog" data-category="Airports">Airports</a></li>
+            <li><a href="#catalog" data-category="Scenery">Scenery</a></li>
           </ul>
         </li>
 
@@ -58,8 +58,8 @@
             <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
           </a>
           <ul class="dropdown">
-            <li><a href="#catalog">Airline Liveries</a></li>
-            <li><a href="#catalog">Custom Liveries</a></li>
+            <li><a href="#catalog" data-category="Liveries">Airline Liveries</a></li>
+            <li><a href="#catalog" data-category="Liveries">Custom Liveries</a></li>
           </ul>
         </li>
 
@@ -68,8 +68,8 @@
             <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
           </a>
           <ul class="dropdown">
-            <li><a href="#catalog">Utilities</a></li>
-            <li><a href="#catalog">Enhancement Mods</a></li>
+            <li><a href="#catalog" data-category="Utilities">Utilities</a></li>
+            <li><a href="#catalog" data-category="Enhancements">Enhancement Mods</a></li>
           </ul>
         </li>
 
@@ -388,6 +388,17 @@
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
           </svg>
           <input type="search" id="catalog-search" placeholder="Search by mod name, developer or description..." aria-label="Search the mod catalog" autocomplete="off">
+        </div>
+
+        <!-- Category filter chips: sends /api/mods?category=... -->
+        <div class="filter-chips" id="category-filters" role="group" aria-label="Filter mods by category">
+          <button type="button" class="chip active" data-category="">All</button>
+          <button type="button" class="chip" data-category="Aircraft">Aircraft</button>
+          <button type="button" class="chip" data-category="Liveries">Liveries</button>
+          <button type="button" class="chip" data-category="Airports">Airports</button>
+          <button type="button" class="chip" data-category="Scenery">Scenery</button>
+          <button type="button" class="chip" data-category="Utilities">Utilities</button>
+          <button type="button" class="chip" data-category="Enhancements">Enhancements</button>
         </div>
 
         <!-- Results bar: shows how many mods are displayed -->

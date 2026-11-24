@@ -13,9 +13,13 @@ const catalogCount = document.getElementById("catalog-count");
 const catalogSearch = document.getElementById("catalog-search");
 const navSearchForm = document.getElementById("nav-search");
 const navSearchInput = document.getElementById("nav-search-input");
+const categoryChips = document.querySelectorAll("#category-filters .chip");
 
 // Current search text typed by the user
 let searchTerm = "";
+
+// Currently selected category ("" means All)
+let selectedCategory = "";
 
 // Counts requests so that only the newest response is displayed
 // (a slow old response must not overwrite a newer search result)
@@ -40,11 +44,16 @@ const DEFAULT_STYLE = { thumb: "thumb-aircraft", icon: "✈️" };
 
 /**
  * Builds the API URL with optional query parameters.
- *   no search      -> /api/mods
- *   search "boeing" -> /api/mods?search=boeing
+ *   nothing selected   -> /api/mods
+ *   search "boeing"     -> /api/mods?search=boeing
+ *   Aircraft + "boeing" -> /api/mods?category=Aircraft&search=boeing
  */
 function buildApiUrl() {
   const params = new URLSearchParams();
+
+  if (selectedCategory) {
+    params.set("category", selectedCategory);
+  }
 
   if (searchTerm) {
     params.set("search", searchTerm);
@@ -138,7 +147,7 @@ function renderMods(mods) {
     catalogGrid.innerHTML = `
       <div class="catalog-message">
         <h3>No mods found</h3>
-        <p>Nothing matches "${escapeHTML(searchTerm)}". Try a different search.</p>
+        <p>No mods match your current search and filters. Try changing them.</p>
       </div>
     `;
     return;
@@ -148,13 +157,14 @@ function renderMods(mods) {
 }
 
 /**
- * Updates the results bar text, e.g. "Showing 8 mods"
- * or 'Showing 2 mods for "boeing"'.
+ * Updates the results bar text, e.g. "Showing 8 mods",
+ * "Showing 3 Aircraft mods" or 'Showing 1 Aircraft mod for "boeing"'.
  */
 function updateCount(total) {
   const label = total === 1 ? "mod" : "mods";
+  const category = selectedCategory ? `${selectedCategory} ` : "";
   const suffix = searchTerm ? ` for "${searchTerm}"` : "";
-  catalogCount.textContent = `Showing ${total} ${label}${suffix}`;
+  catalogCount.textContent = `Showing ${total} ${category}${label}${suffix}`;
 }
 
 /**
@@ -197,6 +207,31 @@ function applySearch(text) {
   searchTerm = text.trim();
   loadCatalog();
 }
+
+/**
+ * Selects a category, highlights the matching chip and reloads the catalog.
+ * An empty string means "All".
+ */
+function applyCategory(category) {
+  selectedCategory = category;
+
+  categoryChips.forEach((chip) => {
+    const isActive = chip.dataset.category === category;
+    chip.classList.toggle("active", isActive);
+    chip.setAttribute("aria-pressed", isActive);
+  });
+
+  loadCatalog();
+}
+
+// ---- Category filters ----
+// Any element with a data-category attribute selects that category:
+// the filter chips, the Categories section tiles and the navbar dropdown links.
+// (Tiles and dropdown links are <a href="#catalog">, so the browser also
+// scrolls down to the catalog for them.)
+document.querySelectorAll("[data-category]").forEach((element) => {
+  element.addEventListener("click", () => applyCategory(element.dataset.category));
+});
 
 // ---- Catalog search box: search while typing ----
 // Debounce: wait 300 ms after the last key press before calling the API,
