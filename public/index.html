@@ -39,7 +39,7 @@
       </a>
 
       <!-- Navigation links (items with a chevron open a dropdown on hover) -->
-      <ul class="nav-links">
+      <ul class="nav-links" id="nav-links">
         <li><a href="#home" class="active">Home</a></li>
 
         <li class="has-dropdown">
@@ -94,8 +94,8 @@
           <span class="cart-count" id="wishlist-count">0</span>
         </a>
 
-        <!-- Mobile menu toggle button (made functional later with JavaScript) -->
-        <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+        <!-- Mobile menu (hamburger) button: shown on small screens only -->
+        <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
           <span></span>
           <span></span>
           <span></span>

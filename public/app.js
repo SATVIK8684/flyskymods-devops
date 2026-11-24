@@ -21,6 +21,8 @@ const dialogClose = document.getElementById("dialog-close");
 const wishlistBtn = document.getElementById("wishlist-btn");
 const wishlistCount = document.getElementById("wishlist-count");
 const savedFilter = document.getElementById("saved-filter");
+const navbar = document.querySelector(".navbar");
+const navToggle = document.getElementById("nav-toggle");
 
 // Current search text typed by the user
 let searchTerm = "";
@@ -457,6 +459,31 @@ savedFilter.addEventListener("click", () => setSavedOnly(!showSavedOnly));
 
 // Navbar heart always opens the saved-only view (and scrolls to the catalog)
 wishlistBtn.addEventListener("click", () => setSavedOnly(true));
+
+// ---- Mobile navigation menu (hamburger) ----
+/**
+ * Opens or closes the mobile menu. The CSS shows the menu panel
+ * when the navbar has the "nav-open" class.
+ */
+function setMenuOpen(open) {
+  navbar.classList.toggle("nav-open", open);
+  navToggle.setAttribute("aria-expanded", open);
+  navToggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+}
+
+navToggle.addEventListener("click", () => {
+  setMenuOpen(!navbar.classList.contains("nav-open"));
+});
+
+// Close the menu after choosing a link
+document.querySelectorAll(".nav-links a").forEach((link) => {
+  link.addEventListener("click", () => setMenuOpen(false));
+});
+
+// Close the menu with the Escape key
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") setMenuOpen(false);
+});
 
 // ---- Catalog search box: search while typing ----
 // Debounce: wait 300 ms after the last key press before calling the API,

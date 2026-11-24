@@ -1526,3 +1526,129 @@ body:has(.mod-dialog[open]) {
   background: linear-gradient(135deg, #f9a8d4, #ec4899);
   color: #2a0a1a;
 }
+
+/* ---------- 14. Responsive navigation ---------- */
+/* Nav labels never wrap onto two lines */
+.nav-links a {
+  white-space: nowrap;
+}
+
+/* Hamburger lines animate into an X when the menu is open */
+.nav-toggle {
+  width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-toggle span {
+  transition: transform var(--transition), opacity var(--transition);
+}
+
+/* Medium screens (small laptops): tighten spacing, shorter search box */
+@media (max-width: 1360px) {
+  .navbar {
+    gap: 1.75rem;
+    padding: 0 1.5rem;
+  }
+
+  .nav-links {
+    gap: 1.5rem;
+  }
+
+  .nav-search input {
+    width: 210px;
+  }
+}
+
+/* Tablets and phones: links move into a slide-down menu panel */
+@media (max-width: 1100px) {
+  .navbar {
+    position: relative;           /* the menu panel is positioned against this */
+    gap: 1rem;
+  }
+
+  .nav-toggle {
+    display: flex;
+  }
+
+  /* The catalog has its own search box, so the navbar one is hidden */
+  .nav-search {
+    display: none;
+  }
+
+  .nav-actions {
+    margin-left: auto;
+    gap: 0.5rem;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    margin: 0;
+    padding: 0.5rem 1.5rem 1.25rem;
+    background: var(--color-bg);   /* solid, so the page behind does not show through */
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+    /* hidden until the hamburger is clicked */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity var(--transition), transform var(--transition),
+                visibility var(--transition);
+  }
+
+  .navbar.nav-open .nav-links {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .nav-links > li > a {
+    display: flex;
+    width: 100%;
+    padding: 0.95rem 0;
+    font-size: 1.05rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .nav-links > li:last-child > a {
+    border-bottom: none;
+  }
+
+  /* No hover dropdowns or underline on touch screens */
+  .dropdown,
+  .chevron,
+  .nav-links > li > a.active::after {
+    display: none;
+  }
+
+  .nav-links > li > a.active {
+    color: var(--color-primary);
+  }
+
+  /* Hamburger -> X */
+  .nav-open .nav-toggle span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .nav-open .nav-toggle span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .nav-open .nav-toggle span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+}
+
+/* Small phones: hide the logo tagline to save space */
+@media (max-width: 420px) {
+  .logo-tagline {
+    display: none;
+  }
+}
