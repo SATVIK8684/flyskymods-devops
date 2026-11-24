@@ -18,6 +18,9 @@ const priceChips = document.querySelectorAll("#price-filters .chip");
 const modDialog = document.getElementById("mod-dialog");
 const dialogContent = document.getElementById("dialog-content");
 const dialogClose = document.getElementById("dialog-close");
+const wishlistBtn = document.getElementById("wishlist-btn");
+const wishlistCount = document.getElementById("wishlist-count");
+const savedFilter = document.getElementById("saved-filter");
 
 // Current search text typed by the user
 let searchTerm = "";
@@ -27,6 +30,12 @@ let selectedCategory = "";
 
 // Currently selected price filter: "" (all), "free" or "paid"
 let selectedPrice = "";
+
+// When true, the catalog shows only mods saved to the wishlist
+let showSavedOnly = false;
+
+// Key used to store the wishlist in the browser's localStorage
+const WISHLIST_KEY = "flyskymods-wishlist";
 
 // Counts requests so that only the newest response is displayed
 // (a slow old response must not overwrite a newer search result)
@@ -114,6 +123,52 @@ function formatDownloads(count) {
   return String(count);
 }
 
+/* ---------------- Wishlist (saved in localStorage) ---------------- */
+
+/**
+ * Reads the saved mod ids from localStorage, e.g. [1, 4, 6].
+ * localStorage keeps data in the browser even after the page is closed.
+ */
+function getWishlist() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(WISHLIST_KEY));
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];                           // storage blocked or invalid data
+  }
+}
+
+function saveWishlist(ids) {
+  try {
+    localStorage.setItem(WISHLIST_KEY, JSON.stringify(ids));
+  } catch {
+    // Storage unavailable (e.g. private mode) - wishlist lasts until reload
+  }
+}
+
+function isSaved(id) {
+  return getWishlist().includes(id);
+}
+
+/**
+ * Adds the mod to the wishlist, or removes it if it is already saved.
+ */
+function toggleWishlist(id) {
+  const ids = getWishlist();
+  const updated = ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id];
+  saveWishlist(updated);
+  updateWishlistCount();
+}
+
+/**
+ * Updates the number on the heart icon in the navbar.
+ */
+function updateWishlistCount() {
+  const total = getWishlist().length;
+  wishlistCount.textContent = total;
+  wishlistBtn.setAttribute("aria-label", `Wishlist, ${total} saved mods`);
+}
+
 /**
  * Builds the HTML for one mod card.
  * Uses the same CSS classes as the static Featured Mods cards.
@@ -128,12 +183,17 @@ function createModCard(mod) {
 
   // New mods (added through the API) start with rating 0
   const rating = mod.rating > 0 ? `★ ${mod.rating.toFixed(1)}` : "★ New";
+  const saved = isSaved(mod.id);
 
   return `
     <article class="mod-card" data-id="${mod.id}">
       <div class="mod-card-image ${style.thumb}">
         <span class="mod-icon" aria-hidden="true">${style.icon}</span>
         ${badge}
+        <button type="button" class="wish-btn${saved ? " saved" : ""}" data-wish="${mod.id}"
+                aria-pressed="${saved}" aria-label="Save ${escapeHTML(mod.name)} to wishlist">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        </button>
       </div>
       <div class="mod-card-body">
         <span class="mod-category">${escapeHTML(mod.category)}</span>
@@ -156,10 +216,14 @@ function createModCard(mod) {
  */
 function renderMods(mods) {
   if (mods.length === 0) {
+    const message = showSavedOnly
+      ? "Your wishlist is empty (or no saved mods match these filters). Tap the ♥ on any mod to save it."
+      : "No mods match your current search and filters. Try changing them.";
+
     catalogGrid.innerHTML = `
       <div class="catalog-message">
         <h3>No mods found</h3>
-        <p>No mods match your current search and filters. Try changing them.</p>
+        <p>${message}</p>
       </div>
     `;
     return;
@@ -175,9 +239,10 @@ function renderMods(mods) {
 function updateCount(total) {
   const label = total === 1 ? "mod" : "mods";
   const price = selectedPrice ? `${selectedPrice} ` : "";
+  const saved = showSavedOnly ? "saved " : "";
   const category = selectedCategory ? `${selectedCategory} ` : "";
   const suffix = searchTerm ? ` for "${searchTerm}"` : "";
-  catalogCount.textContent = `Showing ${total} ${price}${category}${label}${suffix}`;
+  catalogCount.textContent = `Showing ${total} ${saved}${price}${category}${label}${suffix}`;
 }
 
 /**
@@ -270,10 +335,17 @@ async function loadCatalog() {
   const requestId = ++latestRequestId;
 
   try {
-    const mods = await fetchMods();
+    let mods = await fetchMods();
 
     // Ignore this response if a newer search has started meanwhile
     if (requestId !== latestRequestId) return;
+
+    // The wishlist is stored in the browser, so this filter runs here
+    // (all other filters run on the server)
+    if (showSavedOnly) {
+      const wishlist = getWishlist();
+      mods = mods.filter((mod) => wishlist.includes(mod.id));
+    }
 
     renderMods(mods);
     updateCount(mods.length);
@@ -340,6 +412,21 @@ priceChips.forEach((chip) => {
 // Event delegation: ONE listener on the grid handles clicks on every card,
 // including cards that are added later when filters change.
 catalogGrid.addEventListener("click", (event) => {
+  // Heart button: save/unsave without opening the popup
+  const wishButton = event.target.closest(".wish-btn");
+  if (wishButton) {
+    const id = Number(wishButton.dataset.wish);
+    toggleWishlist(id);
+
+    const saved = isSaved(id);
+    wishButton.classList.toggle("saved", saved);
+    wishButton.setAttribute("aria-pressed", saved);
+
+    // In "Saved" view, an unsaved mod should disappear from the list
+    if (showSavedOnly) loadCatalog();
+    return;
+  }
+
   const card = event.target.closest(".mod-card");
   if (card) {
     openModDetails(card.dataset.id);
@@ -356,6 +443,20 @@ modDialog.addEventListener("click", (event) => {
   }
 });
 // (The Escape key closes a <dialog> automatically.)
+
+// ---- Wishlist view ----
+function setSavedOnly(value) {
+  showSavedOnly = value;
+  savedFilter.classList.toggle("active", value);
+  savedFilter.setAttribute("aria-pressed", value);
+  loadCatalog();
+}
+
+// "♥ Saved" chip switches the saved-only view on and off
+savedFilter.addEventListener("click", () => setSavedOnly(!showSavedOnly));
+
+// Navbar heart always opens the saved-only view (and scrolls to the catalog)
+wishlistBtn.addEventListener("click", () => setSavedOnly(true));
 
 // ---- Catalog search box: search while typing ----
 // Debounce: wait 300 ms after the last key press before calling the API,
@@ -375,5 +476,6 @@ navSearchForm.addEventListener("submit", (event) => {
   document.getElementById("catalog").scrollIntoView({ behavior: "smooth" });
 });
 
-// Load all mods when the page opens
+// Load all mods and the wishlist count when the page opens
+updateWishlistCount();
 loadCatalog();
