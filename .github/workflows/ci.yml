@@ -30,13 +30,13 @@ jobs:
     steps:
       # 1. Download the repository code onto the runner
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      # 2. Install Node.js (same major version we will use in production)
+      # 2. Install Node.js 22 (same version as the Hostinger production app)
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"         # re-use downloaded packages to speed up runs
 
       # 3. Install exact dependency versions from package-lock.json
@@ -75,7 +75,7 @@ jobs:
     steps:
       # 1. Download the tested main branch
       - name: Checkout tested code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
