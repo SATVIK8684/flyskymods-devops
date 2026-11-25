@@ -1,10 +1,23 @@
+// Loads variables from a local .env file into process.env (ignored by Git)
+require("dotenv").config({ quiet: true });
+
 const express = require("express");
+const cookieParser = require("cookie-parser");
+const { connectDB } = require("./db");
+const authRoutes = require("./routes/auth");
+const adminRoutes = require("./routes/admin");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Lets the server read JSON sent in request bodies
 app.use(express.json());
+
+// Lets the server read cookies (used for the login token)
+app.use(cookieParser());
+
+// Hostinger runs the app behind a proxy; trust it for HTTPS detection
+app.set("trust proxy", 1);
 
 // Serves files from the public/ folder (Satvik's frontend) once they exist
 app.use(express.static("public"));
@@ -123,6 +136,12 @@ app.post("/api/mods", (req, res) => {
   res.status(201).json(newMod);
 });
 
+// User accounts: register, login, logout, me
+app.use("/api/auth", authRoutes);
+
+// Admin-only routes (checked on the server for every request)
+app.use("/api/admin", adminRoutes);
+
 // Any /api request that did not match a route above gets a JSON 404
 app.use("/api", (req, res) => {
   res.status(404).json({ error: "API route not found" });
@@ -140,11 +159,15 @@ app.use((err, req, res, next) => {
 });
 
 // Only start listening when run directly with "node server.js".
-// Tests will import `app` without opening a real port.
+// Tests will import `app` without opening a real port or connecting to MongoDB.
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`FlySkyMods server running on http://localhost:${PORT}`);
-  });
+  connectDB(process.env.MONGODB_URI)
+    .catch((error) => console.error("MongoDB connection failed:", error.message))
+    .finally(() => {
+      app.listen(PORT, () => {
+        console.log(`FlySkyMods server running on http://localhost:${PORT}`);
+      });
+    });
 }
 
 module.exports = app;
