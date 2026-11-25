@@ -1969,3 +1969,183 @@ body:has(.mod-dialog[open]) {
     padding: 2rem 1.25rem 1.5rem;
   }
 }
+
+/* ---------- 17. Account menu ---------- */
+.account-wrap {
+  position: relative;
+}
+
+.account-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 120;
+  min-width: 240px;
+  padding: 1rem;
+  border-radius: 14px;
+  background: var(--color-bg-soft);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.account-menu[hidden] {
+  display: none;
+}
+
+.account-name {
+  font-weight: 600;
+}
+
+.account-email {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  word-break: break-all;
+  margin-bottom: 0.6rem;
+}
+
+/* "Pilot" / "Admin" label */
+.role-badge {
+  display: inline-block;
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.role-badge.admin {
+  background: rgba(233, 185, 96, 0.15);
+  border-color: rgba(233, 185, 96, 0.45);
+  color: var(--color-primary);
+}
+
+.account-menu .role-badge {
+  margin-bottom: 0.75rem;
+}
+
+.account-link {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.account-link:hover {
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+
+.account-link[hidden] {
+  display: none;
+}
+
+/* ---------- 18. Admin dashboard ---------- */
+.admin-back {
+  margin-left: auto;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.88rem;
+}
+
+.admin-header {
+  margin-bottom: 2rem;
+}
+
+.admin-blocked-btn {
+  margin-top: 1.25rem;
+}
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.admin-stats li {
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.admin-stats strong {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  color: var(--color-primary);
+}
+
+.admin-stats span {
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+.admin-panel {
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.admin-panel-header {
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-panel-header h2 {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.9rem 1.5rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.admin-table th {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.admin-table tbody tr {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+@media (max-width: 640px) {
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 0.75rem 1rem;
+  }
+}
