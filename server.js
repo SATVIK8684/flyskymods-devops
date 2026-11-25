@@ -5,6 +5,7 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const { connectDB } = require("./db");
 const authRoutes = require("./routes/auth");
+const adminRoutes = require("./routes/admin");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -137,6 +138,9 @@ app.post("/api/mods", (req, res) => {
 
 // User accounts: register, login, logout, me
 app.use("/api/auth", authRoutes);
+
+// Admin-only routes (checked on the server for every request)
+app.use("/api/admin", adminRoutes);
 
 // Any /api request that did not match a route above gets a JSON 404
 app.use("/api", (req, res) => {

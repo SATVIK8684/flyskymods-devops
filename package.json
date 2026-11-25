@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "jest"
+    "test": "jest",
+    "create-admin": "node scripts/create-admin.js"
   },
   "keywords": [
     "flight-simulator",
