@@ -2,13 +2,21 @@
 require("dotenv").config({ quiet: true });
 
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const { connectDB } = require("./db");
+const authRoutes = require("./routes/auth");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Lets the server read JSON sent in request bodies
 app.use(express.json());
+
+// Lets the server read cookies (used for the login token)
+app.use(cookieParser());
+
+// Hostinger runs the app behind a proxy; trust it for HTTPS detection
+app.set("trust proxy", 1);
 
 // Serves files from the public/ folder (Satvik's frontend) once they exist
 app.use(express.static("public"));
@@ -126,6 +134,9 @@ app.post("/api/mods", (req, res) => {
   mods.push(newMod);
   res.status(201).json(newMod);
 });
+
+// User accounts: register, login, logout, me
+app.use("/api/auth", authRoutes);
 
 // Any /api request that did not match a route above gets a JSON 404
 app.use("/api", (req, res) => {
