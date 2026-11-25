@@ -18,6 +18,9 @@
   <!-- Frontend JavaScript. "defer" runs it after the HTML has loaded,
        so document.getElementById() can find the catalog elements. -->
   <script src="app.js" defer></script>
+
+  <!-- User accounts: sign in, create account, account menu -->
+  <script src="auth.js" defer></script>
 </head>
 <body>
 
@@ -85,6 +88,12 @@
           </svg>
           <input type="search" id="nav-search-input" placeholder="Search add-ons, liveries, scenery..." aria-label="Search mods">
         </form>
+
+        <!-- Account button: "Sign In" when logged out, the user's name when logged in -->
+        <button type="button" class="account-btn" id="account-btn">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+          <span class="account-label" id="account-label">Sign In</span>
+        </button>
 
         <!-- Wishlist button: shows how many mods are saved; click to view them -->
         <a href="#catalog" class="cart-btn" id="wishlist-btn" aria-label="Wishlist, 0 saved mods">
@@ -595,6 +604,57 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
     </button>
     <div id="dialog-content"></div>
+  </dialog>
+
+  <!-- ===== SIGN IN / CREATE ACCOUNT POPUP ===== -->
+  <dialog class="mod-dialog auth-dialog" id="auth-dialog" aria-labelledby="auth-title">
+    <button type="button" class="dialog-close" id="auth-close" aria-label="Close">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+
+    <div class="auth-body">
+      <h2 class="dialog-title" id="auth-title">Welcome back, pilot</h2>
+      <p class="auth-subtitle" id="auth-subtitle">Sign in to your FlySkyMods account.</p>
+
+      <!-- Tabs switch between the two forms -->
+      <div class="auth-tabs" role="tablist">
+        <button type="button" class="auth-tab active" id="tab-login" role="tab" aria-selected="true" data-mode="login">Sign In</button>
+        <button type="button" class="auth-tab" id="tab-register" role="tab" aria-selected="false" data-mode="register">Create Account</button>
+      </div>
+
+      <!-- Error/success messages from the API appear here -->
+      <div class="auth-message" id="auth-message" role="alert" hidden></div>
+
+      <!-- Sign in form -->
+      <form class="auth-form" id="login-form" novalidate>
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <input type="email" id="login-email" name="email" autocomplete="email" required>
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" name="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn btn-lg btn-full">Sign In</button>
+      </form>
+
+      <!-- Create account form -->
+      <form class="auth-form" id="register-form" novalidate hidden>
+        <div class="form-group">
+          <label for="register-name">Full Name</label>
+          <input type="text" id="register-name" name="name" autocomplete="name" minlength="2" maxlength="50" required>
+        </div>
+        <div class="form-group">
+          <label for="register-email">Email Address</label>
+          <input type="email" id="register-email" name="email" autocomplete="email" required>
+        </div>
+        <div class="form-group">
+          <label for="register-password">Password <span class="field-hint">(at least 8 characters)</span></label>
+          <input type="password" id="register-password" name="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+        </div>
+        <button type="submit" class="btn btn-lg btn-full">Create Account</button>
+      </form>
+    </div>
   </dialog>
 
 </body>
