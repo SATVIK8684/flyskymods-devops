@@ -1,4 +1,8 @@
+// Loads variables from a local .env file into process.env (ignored by Git)
+require("dotenv").config({ quiet: true });
+
 const express = require("express");
+const { connectDB } = require("./db");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -140,11 +144,15 @@ app.use((err, req, res, next) => {
 });
 
 // Only start listening when run directly with "node server.js".
-// Tests will import `app` without opening a real port.
+// Tests will import `app` without opening a real port or connecting to MongoDB.
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`FlySkyMods server running on http://localhost:${PORT}`);
-  });
+  connectDB(process.env.MONGODB_URI)
+    .catch((error) => console.error("MongoDB connection failed:", error.message))
+    .finally(() => {
+      app.listen(PORT, () => {
+        console.log(`FlySkyMods server running on http://localhost:${PORT}`);
+      });
+    });
 }
 
 module.exports = app;
