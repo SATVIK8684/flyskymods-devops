@@ -7,6 +7,10 @@
               DELETE /api/admin/products/:id
               PUT    /api/admin/products/:id/image   (raw image body)
               DELETE /api/admin/products/:id/image
+   Mod files: POST   /api/admin/products/:id/file/start      { fileName, size, contentType }
+              POST   /api/admin/products/:id/file/complete   { key, uploadId?, parts?, fileName, size }
+              POST   /api/admin/products/:id/file/abort      { key, uploadId }
+              DELETE /api/admin/products/:id/file
    Coupons:   GET    /api/admin/coupons
               POST   /api/admin/coupons
               PATCH  /api/admin/coupons/:id   { active }
@@ -20,6 +24,7 @@ const Product = require("../models/Product");
 const Coupon = require("../models/Coupon");
 const Order = require("../models/Order");
 const { requireAccounts, requireAuth, requireAdmin } = require("../middleware/auth");
+const storage = require("../storage");
 
 const router = express.Router();
 
@@ -115,6 +120,11 @@ router.delete("/products/:id", async (req, res) => {
   const product = await findProduct(req, res);
   if (!product) return;
 
+  // Also remove its download file from R2 (if any)
+  if (product.file && product.file.key && storage.isStorageConfigured()) {
+    await storage.deleteFile(product.file.key).catch((error) => console.error("R2 delete failed:", error.message));
+  }
+
   await product.deleteOne();
   res.json({ message: "Product deleted" });
 });
@@ -148,6 +158,91 @@ router.delete("/products/:id/image", async (req, res) => {
 
   product.image = undefined;
   product.hasImage = false;
+  await product.save();
+  res.json(product.toPublicJSON());
+});
+
+/* ---------------- Mod files (Cloudflare R2) ---------------- */
+
+const MAX_FILE_BYTES = 20 * 1024 * 1024 * 1024;   // 20 GB
+
+function requireStorage(req, res, next) {
+  if (!storage.isStorageConfigured()) {
+    return res.status(503).json({ error: "File storage (Cloudflare R2) is not configured yet" });
+  }
+  next();
+}
+
+// Each product's files live under mods/<productId>/ in the bucket
+const keyPrefix = (product) => `mods/${product.productId}/`;
+
+function cleanFileName(name) {
+  return String(name || "").replace(/[^A-Za-z0-9._-]+/g, "_").slice(0, 120);
+}
+
+router.post("/products/:id/file/start", requireStorage, async (req, res) => {
+  const product = await findProduct(req, res);
+  if (!product) return;
+
+  const { fileName, size, contentType } = req.body || {};
+  const name = cleanFileName(fileName);
+  const bytes = Number(size);
+  if (!name || !Number.isInteger(bytes) || bytes < 1 || bytes > MAX_FILE_BYTES) {
+    return res.status(400).json({ error: "Choose a file between 1 byte and 20 GB" });
+  }
+
+  const key = `${keyPrefix(product)}${Date.now()}-${name}`;
+  const upload = await storage.startUpload(key, bytes, typeof contentType === "string" && contentType ? contentType : "application/octet-stream");
+  res.json({ key, ...upload });
+});
+
+router.post("/products/:id/file/complete", requireStorage, async (req, res) => {
+  const product = await findProduct(req, res);
+  if (!product) return;
+
+  const { key, uploadId, parts, fileName, size } = req.body || {};
+  if (typeof key !== "string" || !key.startsWith(keyPrefix(product))) {
+    return res.status(400).json({ error: "Upload key does not belong to this product" });
+  }
+
+  if (uploadId) {
+    if (!Array.isArray(parts) || parts.length === 0) {
+      return res.status(400).json({ error: "Missing uploaded parts" });
+    }
+    const cleanParts = parts.map((part) => ({ PartNumber: Number(part.PartNumber), ETag: String(part.ETag) }));
+    await storage.completeUpload(key, uploadId, cleanParts);
+  }
+
+  // Replace the old file
+  const oldKey = product.file && product.file.key;
+  product.file = { key, name: cleanFileName(fileName) || "download", size: Number(size) || 0 };
+  await product.save();
+  if (oldKey && oldKey !== key) {
+    await storage.deleteFile(oldKey).catch((error) => console.error("R2 delete failed:", error.message));
+  }
+
+  res.json(product.toPublicJSON());
+});
+
+router.post("/products/:id/file/abort", requireStorage, async (req, res) => {
+  const product = await findProduct(req, res);
+  if (!product) return;
+
+  const { key, uploadId } = req.body || {};
+  if (typeof key === "string" && key.startsWith(keyPrefix(product)) && uploadId) {
+    await storage.abortUpload(key, uploadId).catch(() => {});
+  }
+  res.json({ message: "Upload cancelled" });
+});
+
+router.delete("/products/:id/file", requireStorage, async (req, res) => {
+  const product = await findProduct(req, res);
+  if (!product) return;
+
+  if (product.file && product.file.key) {
+    await storage.deleteFile(product.file.key).catch((error) => console.error("R2 delete failed:", error.message));
+  }
+  product.file = undefined;
   await product.save();
   res.json(product.toPublicJSON());
 });

@@ -4,12 +4,15 @@
    GET  /api/store/payment-info               UPI details to show at checkout
    POST /api/orders          { productId, couponCode?, paymentRef }  (signed in)
    GET  /api/orders/mine     the signed-in customer's purchase requests
+   GET  /api/mods/:id/download   signed 5-minute download link (signed in;
+                                 free mod, approved purchase or admin)
    ========================================================= */
 const express = require("express");
 const Product = require("../models/Product");
 const Coupon = require("../models/Coupon");
 const Order = require("../models/Order");
 const { requireAccounts, requireAuth } = require("../middleware/auth");
+const storage = require("../storage");
 
 const router = express.Router();
 
@@ -120,6 +123,34 @@ router.post("/orders", requireAccounts, requireAuth, async (req, res) => {
 router.get("/orders/mine", requireAccounts, requireAuth, async (req, res) => {
   const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
   res.json(orders.map((order) => order.toPublicJSON()));
+});
+
+/* ---------------- Downloads ---------------- */
+
+router.get("/mods/:id/download", requireAccounts, requireAuth, async (req, res) => {
+  const id = Number(req.params.id);
+  const product = Number.isInteger(id) ? await Product.findOne({ productId: id }) : null;
+  if (!product) return res.status(404).json({ error: "Mod not found" });
+
+  if (!product.file || !product.file.key) {
+    return res.status(404).json({ error: "The download file for this mod is not available yet" });
+  }
+
+  // Paid mods: only customers with an approved purchase (or admins)
+  if (product.price > 0 && req.user.role !== "admin") {
+    const owned = await Order.exists({ user: req.user._id, productId: product.productId, status: "approved" });
+    if (!owned) {
+      return res.status(403).json({ error: "Buy this mod to download it" });
+    }
+  }
+
+  if (!storage.isStorageConfigured()) {
+    return res.status(503).json({ error: "Downloads are temporarily unavailable" });
+  }
+
+  const url = await storage.signDownload(product.file.key, product.file.name);
+  await Product.updateOne({ _id: product._id }, { $inc: { downloads: 1 } });
+  res.json({ url, fileName: product.file.name });
 });
 
 module.exports = router;
