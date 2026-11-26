@@ -11,11 +11,14 @@
               POST   /api/admin/coupons
               PATCH  /api/admin/coupons/:id   { active }
               DELETE /api/admin/coupons/:id
+   Purchases: GET    /api/admin/orders?status=pending
+              PATCH  /api/admin/orders/:id   { status: "approved" | "rejected", note }
    ========================================================= */
 const express = require("express");
 const User = require("../models/User");
 const Product = require("../models/Product");
 const Coupon = require("../models/Coupon");
+const Order = require("../models/Order");
 const { requireAccounts, requireAuth, requireAdmin } = require("../middleware/auth");
 
 const router = express.Router();
@@ -219,6 +222,43 @@ router.delete("/coupons/:id", async (req, res) => {
   const coupon = await Coupon.findByIdAndDelete(req.params.id).catch(() => null);
   if (!coupon) return res.status(404).json({ error: "Coupon not found" });
   res.json({ message: "Coupon deleted" });
+});
+
+/* ---------------- Purchase requests ---------------- */
+
+router.get("/orders", async (req, res) => {
+  const filter = {};
+  if (["pending", "approved", "rejected"].includes(req.query.status)) {
+    filter.status = req.query.status;
+  }
+  const orders = await Order.find(filter).sort({ createdAt: -1 });
+  res.json(orders.map((order) => order.toPublicJSON()));
+});
+
+// Approve (customer can download) or reject a pending request
+router.patch("/orders/:id", async (req, res) => {
+  const { status, note } = req.body || {};
+  if (!["approved", "rejected"].includes(status)) {
+    return res.status(400).json({ error: "status must be approved or rejected" });
+  }
+
+  const order = await Order.findById(req.params.id).catch(() => null);
+  if (!order) return res.status(404).json({ error: "Order not found" });
+  if (order.status !== "pending") {
+    return res.status(409).json({ error: `This request was already ${order.status}` });
+  }
+
+  order.status = status;
+  order.adminNote = typeof note === "string" ? note.trim().slice(0, 300) : "";
+  order.decidedAt = new Date();
+  await order.save();
+
+  // A coupon counts as "used" only when the purchase is approved
+  if (status === "approved" && order.couponCode) {
+    await Coupon.updateOne({ code: order.couponCode }, { $inc: { uses: 1 } });
+  }
+
+  res.json(order.toPublicJSON());
 });
 
 module.exports = router;
