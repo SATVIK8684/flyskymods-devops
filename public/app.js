@@ -116,6 +116,14 @@ function escapeHTML(text) {
 }
 
 /**
+ * Formats a price in Indian Rupees: 1999 -> "₹1,999", 0 -> "Free".
+ */
+function formatPrice(price) {
+  if (price === 0) return "Free";
+  return "₹" + price.toLocaleString("en-IN");
+}
+
+/**
  * Formats download numbers: 15230 -> "15.2K", 950 -> "950".
  */
 function formatDownloads(count) {
@@ -181,7 +189,7 @@ function createModCard(mod) {
 
   const badge = isFree
     ? `<span class="badge badge-free">Free</span>`
-    : `<span class="badge badge-premium">$${mod.price.toFixed(2)}</span>`;
+    : `<span class="badge badge-premium">${formatPrice(mod.price)}</span>`;
 
   // New mods (added through the API) start with rating 0
   const rating = mod.rating > 0 ? `★ ${mod.rating.toFixed(1)}` : "★ New";
@@ -283,7 +291,7 @@ async function fetchModById(id) {
 function createModDetails(mod) {
   const style = CATEGORY_STYLES[mod.category] || DEFAULT_STYLE;
   const isFree = mod.price === 0;
-  const price = isFree ? "Free" : `$${mod.price.toFixed(2)}`;
+  const price = formatPrice(mod.price);
   const rating = mod.rating > 0 ? mod.rating.toFixed(1) : "New";
 
   return `
