@@ -2546,3 +2546,29 @@ body:has(.mod-dialog[open]) {
   text-align: center;
   padding: 1.5rem 0;
 }
+
+/* ---------- 21. Featured mods + wishlist button in popup ---------- */
+.featured-loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 2rem 0;
+}
+
+.btn-card {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.wish-toggle {
+  margin-top: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.wish-toggle.saved {
+  border-color: rgba(244, 114, 182, 0.7);
+  color: #f472b6;
+}
