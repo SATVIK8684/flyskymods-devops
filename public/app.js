@@ -9,6 +9,7 @@ const API_URL = "/api/mods";
 
 // References to elements in index.html
 const catalogGrid = document.getElementById("catalog-grid");
+const featuredGrid = document.getElementById("featured-grid");
 const catalogCount = document.getElementById("catalog-count");
 const catalogSearch = document.getElementById("catalog-search");
 const navSearchForm = document.getElementById("nav-search");
@@ -216,7 +217,7 @@ function createModCard(mod) {
           <span class="rating">${rating}</span>
           <span class="downloads">${formatDownloads(mod.downloads)} downloads</span>
         </div>
-        <button type="button" class="btn btn-card">View Details</button>
+        <button type="button" class="btn btn-card" data-card-action="${isFree ? "details" : "buy"}">${isFree ? "Download Free" : "Buy Now"}</button>
       </div>
     </article>
   `;
@@ -315,6 +316,10 @@ function createModDetails(mod) {
 
       <!-- Buy / download buttons are filled in by renderPurchaseArea() -->
       <div class="purchase-area" id="purchase-area"></div>
+
+      <button type="button" class="btn btn-glass btn-full wish-toggle${isSaved(mod.id) ? " saved" : ""}" data-buy="wishlist" aria-pressed="${isSaved(mod.id)}">
+        ${isSaved(mod.id) ? "♥ Saved to Wishlist" : "♡ Add to Wishlist"}
+      </button>
     </div>
   `;
 }
@@ -491,7 +496,7 @@ function formatFileSize(bytes) {
  * Opens the details popup for a mod.
  * Data is loaded fresh from the API so it is always up to date.
  */
-async function openModDetails(id) {
+async function openModDetails(id, { checkout = false } = {}) {
   dialogContent.innerHTML = `<p class="dialog-loading">Loading mod details...</p>`;
   modDialog.showModal();                 // built-in <dialog> method
 
@@ -501,6 +506,11 @@ async function openModDetails(id) {
     appliedCoupon = null;
     dialogContent.innerHTML = createModDetails(mod);
     await renderPurchaseArea(mod);
+
+    // "Buy Now" on a card: open the checkout directly when possible
+    if (checkout && document.querySelector('[data-buy="checkout"]')) {
+      await showCheckout(mod);
+    }
   } catch (error) {
     console.error(error);
     dialogContent.innerHTML = `
@@ -593,29 +603,51 @@ priceChips.forEach((chip) => {
 });
 
 // ---- Mod details popup ----
-// Event delegation: ONE listener on the grid handles clicks on every card,
+/**
+ * Saves/unsaves a mod and updates EVERY heart for it on the page
+ * (the same mod can appear in Featured and in the Catalog).
+ */
+function setWishlistButtons(id) {
+  const saved = isSaved(id);
+
+  document.querySelectorAll(`.wish-btn[data-wish="${id}"]`).forEach((button) => {
+    button.classList.toggle("saved", saved);
+    button.setAttribute("aria-pressed", saved);
+  });
+
+  const popupButton = document.querySelector(".wish-toggle");
+  if (popupButton && currentMod && currentMod.id === id) {
+    popupButton.classList.toggle("saved", saved);
+    popupButton.setAttribute("aria-pressed", saved);
+    popupButton.textContent = saved ? "♥ Saved to Wishlist" : "♡ Add to Wishlist";
+  }
+
+  // In "Saved" view, an unsaved mod should disappear from the list
+  if (showSavedOnly) loadCatalog();
+}
+
+// Event delegation: ONE listener per grid handles clicks on every card,
 // including cards that are added later when filters change.
-catalogGrid.addEventListener("click", (event) => {
+function handleCardClick(event) {
   // Heart button: save/unsave without opening the popup
   const wishButton = event.target.closest(".wish-btn");
   if (wishButton) {
     const id = Number(wishButton.dataset.wish);
     toggleWishlist(id);
-
-    const saved = isSaved(id);
-    wishButton.classList.toggle("saved", saved);
-    wishButton.setAttribute("aria-pressed", saved);
-
-    // In "Saved" view, an unsaved mod should disappear from the list
-    if (showSavedOnly) loadCatalog();
+    setWishlistButtons(id);
     return;
   }
 
   const card = event.target.closest(".mod-card");
-  if (card) {
-    openModDetails(card.dataset.id);
-  }
-});
+  if (!card) return;
+
+  // "Buy Now" goes straight to the checkout; anything else shows the details
+  const buy = event.target.closest('[data-card-action="buy"]');
+  openModDetails(Number(card.dataset.id), { checkout: Boolean(buy) });
+}
+
+catalogGrid.addEventListener("click", handleCardClick);
+featuredGrid.addEventListener("click", handleCardClick);
 
 // Buy / download buttons inside the popup
 dialogContent.addEventListener("click", async (event) => {
@@ -623,7 +655,10 @@ dialogContent.addEventListener("click", async (event) => {
   if (!button || !currentMod) return;
   const action = button.dataset.buy;
 
-  if (action === "signin") {
+  if (action === "wishlist") {
+    toggleWishlist(currentMod.id);
+    setWishlistButtons(currentMod.id);
+  } else if (action === "signin") {
     modDialog.close();
     openAuthDialog("login");
   } else if (action === "checkout") {
@@ -709,6 +744,25 @@ navSearchForm.addEventListener("submit", (event) => {
   document.getElementById("catalog").scrollIntoView({ behavior: "smooth" });
 });
 
-// Load all mods and the wishlist count when the page opens
+/**
+ * Featured Mods: the 4 highest-rated products from the database.
+ */
+async function loadFeatured() {
+  try {
+    const response = await fetch(API_URL);
+    if (!response.ok) throw new Error();
+    const mods = await response.json();
+
+    const top = [...mods].sort((a, b) => b.rating - a.rating || b.downloads - a.downloads).slice(0, 4);
+    featuredGrid.innerHTML = top.length
+      ? top.map(createModCard).join("")
+      : `<p class="featured-loading">New mods are coming soon.</p>`;
+  } catch {
+    featuredGrid.innerHTML = `<p class="featured-loading">Featured mods could not be loaded.</p>`;
+  }
+}
+
+// Load featured mods, all mods and the wishlist count when the page opens
 updateWishlistCount();
+loadFeatured();
 loadCatalog();
