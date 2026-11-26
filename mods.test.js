@@ -71,6 +71,15 @@ describe("FlySkyMods API", () => {
     paid.body.forEach((mod) => expect(mod.price).toBeGreaterThan(0));
   });
 
+  test("pages link versioned scripts and styles so browsers get new files after a deploy", async () => {
+    const res = await request(app).get("/admin.html");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.headers["cache-control"]).toBe("no-cache");
+    expect(res.text).toMatch(/src="admin.js?v=[a-z0-9]+"/);
+    expect(res.text).toMatch(/href="style.css?v=[a-z0-9]+"/);
+  });
+
   test("POST /api/mods returns 400 for invalid JSON", async () => {
     const res = await request(app)
       .post("/api/mods")
