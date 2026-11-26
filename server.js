@@ -22,7 +22,40 @@ app.use(cookieParser());
 // Hostinger runs the app behind a proxy; trust it for HTTPS detection
 app.set("trust proxy", 1);
 
-// Serves files from the public/ folder (Satvik's frontend) once they exist
+// ---- Cache busting for the HTML pages ----
+// Hostinger's CDN tells browsers to keep .js/.css files for 7 days, so after a
+// deployment visitors could get a NEW page with an OLD script. We add a version
+// tag that changes on every deployment: app.js -> app.js?v=<start time>.
+// The HTML pages themselves are not cached, so they always point to fresh files.
+const path = require("path");
+const fs = require("fs");
+
+const ASSET_VERSION = Date.now().toString(36);
+const pageCache = new Map();
+
+function sendPage(fileName) {
+  return (req, res, next) => {
+    try {
+      if (!pageCache.has(fileName)) {
+        const html = fs.readFileSync(path.join(__dirname, "public", fileName), "utf8");
+        // Only local files like "app.js" or "style.css" (not https://... links)
+        pageCache.set(
+          fileName,
+          html.replace(/(src|href)="([\w-]+\.(?:js|css))"/g, `$1="$2?v=${ASSET_VERSION}"`)
+        );
+      }
+      res.set("Cache-Control", "no-cache");
+      res.type("html").send(pageCache.get(fileName));
+    } catch (error) {
+      next(error);
+    }
+  };
+}
+
+app.get(["/", "/index.html"], sendPage("index.html"));
+app.get("/admin.html", sendPage("admin.html"));
+
+// Serves the other files from the public/ folder (scripts, styles, images)
 app.use(express.static("public"));
 
 // ---- NEW: in-memory mod data ----
