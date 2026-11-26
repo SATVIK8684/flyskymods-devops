@@ -9,7 +9,6 @@ const API_URL = "/api/mods";
 
 // References to elements in index.html
 const catalogGrid = document.getElementById("catalog-grid");
-const featuredGrid = document.getElementById("featured-grid");
 const catalogCount = document.getElementById("catalog-count");
 const catalogSearch = document.getElementById("catalog-search");
 const navSearchForm = document.getElementById("nav-search");
@@ -182,7 +181,7 @@ function updateWishlistCount() {
 
 /**
  * Builds the HTML for one mod card.
- * Uses the same CSS classes as the static Featured Mods cards.
+ * Uses the shared .mod-card styles.
  */
 function createModCard(mod) {
   const style = CATEGORY_STYLES[mod.category] || DEFAULT_STYLE;
@@ -605,7 +604,7 @@ priceChips.forEach((chip) => {
 // ---- Mod details popup ----
 /**
  * Saves/unsaves a mod and updates EVERY heart for it on the page
- * (the same mod can appear in Featured and in the Catalog).
+ * (the catalog card and the details popup).
  */
 function setWishlistButtons(id) {
   const saved = isSaved(id);
@@ -647,7 +646,6 @@ function handleCardClick(event) {
 }
 
 catalogGrid.addEventListener("click", handleCardClick);
-featuredGrid.addEventListener("click", handleCardClick);
 
 // Buy / download buttons inside the popup
 dialogContent.addEventListener("click", async (event) => {
@@ -744,25 +742,6 @@ navSearchForm.addEventListener("submit", (event) => {
   document.getElementById("catalog").scrollIntoView({ behavior: "smooth" });
 });
 
-/**
- * Featured Mods: the 4 highest-rated products from the database.
- */
-async function loadFeatured() {
-  try {
-    const response = await fetch(API_URL);
-    if (!response.ok) throw new Error();
-    const mods = await response.json();
-
-    const top = [...mods].sort((a, b) => b.rating - a.rating || b.downloads - a.downloads).slice(0, 4);
-    featuredGrid.innerHTML = top.length
-      ? top.map(createModCard).join("")
-      : `<p class="featured-loading">New mods are coming soon.</p>`;
-  } catch {
-    featuredGrid.innerHTML = `<p class="featured-loading">Featured mods could not be loaded.</p>`;
-  }
-}
-
-// Load featured mods, all mods and the wishlist count when the page opens
+// Load all mods and the wishlist count when the page opens
 updateWishlistCount();
-loadFeatured();
 loadCatalog();

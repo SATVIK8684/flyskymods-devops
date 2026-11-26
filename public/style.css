@@ -2547,14 +2547,7 @@ body:has(.mod-dialog[open]) {
   padding: 1.5rem 0;
 }
 
-/* ---------- 21. Featured mods + wishlist button in popup ---------- */
-.featured-loading {
-  grid-column: 1 / -1;
-  text-align: center;
-  color: var(--color-text-muted);
-  padding: 2rem 0;
-}
-
+/* ---------- 21. Card buttons + wishlist button in popup ---------- */
 .btn-card {
   border: none;
   cursor: pointer;
