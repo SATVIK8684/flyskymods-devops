@@ -76,8 +76,8 @@ describe("FlySkyMods API", () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.headers["cache-control"]).toBe("no-cache");
-    expect(res.text).toMatch(/src="admin.js?v=[a-z0-9]+"/);
-    expect(res.text).toMatch(/href="style.css?v=[a-z0-9]+"/);
+    expect(res.text).toMatch(/src="admin\.js\?v=[a-z0-9]+"/);
+    expect(res.text).toMatch(/href="style\.css\?v=[a-z0-9]+"/);
   });
 
   test("POST /api/mods returns 400 for invalid JSON", async () => {
