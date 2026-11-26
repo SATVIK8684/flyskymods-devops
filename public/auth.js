@@ -23,6 +23,10 @@ const accountEmail = document.getElementById("account-email");
 const accountRole = document.getElementById("account-role");
 const adminLink = document.getElementById("admin-link");
 const logoutBtn = document.getElementById("logout-btn");
+const purchasesLink = document.getElementById("purchases-link");
+const purchasesDialog = document.getElementById("purchases-dialog");
+const purchasesList = document.getElementById("purchases-list");
+const purchasesMessage = document.getElementById("purchases-message");
 
 // The logged-in user ({ id, name, email, role, createdAt }) or null
 let currentUser = null;
@@ -234,6 +238,70 @@ accountBtn.addEventListener("click", () => {
 });
 
 logoutBtn.addEventListener("click", logOut);
+
+/* ---------------- My Purchases ---------------- */
+
+async function openPurchases() {
+  setAccountMenuOpen(false);
+  purchasesMessage.hidden = true;
+  purchasesList.innerHTML = "<li class=\"purchases-empty\">Loading...</li>";
+  purchasesDialog.showModal();
+
+  const { ok, data } = await apiRequest("/api/orders/mine");
+  if (!ok) {
+    purchasesList.innerHTML = "<li class=\"purchases-empty\">Could not load your purchases.</li>";
+    return;
+  }
+  if (data.length === 0) {
+    purchasesList.innerHTML = "<li class=\"purchases-empty\">No purchases yet. Open any paid mod and click Buy Now.</li>";
+    return;
+  }
+
+  // textContent is used for every value, so nothing can inject HTML
+  purchasesList.innerHTML = "";
+  data.forEach((order) => {
+    const item = document.createElement("li");
+    item.className = "purchase-item";
+
+    const info = document.createElement("div");
+    const name = document.createElement("strong");
+    name.textContent = `${order.productName} v${order.productVersion}`;
+    const details = document.createElement("span");
+    details.className = "admin-muted";
+    details.textContent = `₹${order.finalPrice.toLocaleString("en-IN")} · ${new Date(order.createdAt).toLocaleDateString("en-IN")}${order.adminNote ? " · " + order.adminNote : ""}`;
+    info.append(name, document.createElement("br"), details);
+
+    const badge = document.createElement("span");
+    badge.className = `status-badge ${order.status}`;
+    badge.textContent = order.status;
+
+    item.append(info, badge);
+
+    if (order.status === "approved") {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "admin-action";
+      button.textContent = "Download";
+      button.addEventListener("click", async () => {
+        const error = await downloadMod(order.productId);   // from app.js
+        if (error) {
+          purchasesMessage.textContent = error;
+          purchasesMessage.className = "auth-message error";
+          purchasesMessage.hidden = false;
+        }
+      });
+      item.append(button);
+    }
+
+    purchasesList.append(item);
+  });
+}
+
+purchasesLink.addEventListener("click", openPurchases);
+document.getElementById("purchases-close").addEventListener("click", () => purchasesDialog.close());
+purchasesDialog.addEventListener("click", (event) => {
+  if (event.target === purchasesDialog) purchasesDialog.close();
+});
 
 // Close the account menu when clicking anywhere else, or pressing Escape
 document.addEventListener("click", (event) => {
