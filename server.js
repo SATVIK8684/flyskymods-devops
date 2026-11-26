@@ -5,6 +5,7 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const { connectDB, getDbStatus, isDbConnected } = require("./db");
 const Product = require("./models/Product");
+const { isStorageConfigured } = require("./storage");
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
 const storeRoutes = require("./routes/store");
@@ -94,7 +95,8 @@ app.get("/api/health", (req, res) => {
     accounts: {
       ...getDbStatus(),
       jwtSecret: Boolean(process.env.JWT_SECRET)
-    }
+    },
+    files: { storage: isStorageConfigured() }
   });
 });
 
