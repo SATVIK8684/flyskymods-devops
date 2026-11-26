@@ -7,6 +7,7 @@ const { connectDB, getDbStatus, isDbConnected } = require("./db");
 const Product = require("./models/Product");
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
+const storeRoutes = require("./routes/store");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -213,6 +214,9 @@ app.use("/api/auth", authRoutes);
 
 // Admin-only routes (checked on the server for every request)
 app.use("/api/admin", adminRoutes);
+
+// Customer store routes: coupons, purchase requests, downloads
+app.use("/api", storeRoutes);
 
 // Any /api request that did not match a route above gets a JSON 404
 app.use("/api", (req, res) => {
