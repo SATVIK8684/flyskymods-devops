@@ -139,6 +139,23 @@ app.get("/api/mods", async (req, res) => {
   res.json(result);
 });
 
+// Product picture (stored in MongoDB). The URL contains ?v=<last update>,
+// so browsers may cache it; a new upload gets a new URL.
+app.get("/api/mods/:id/image", async (req, res) => {
+  const id = Number(req.params.id);
+  const product = isDbConnected() && Number.isInteger(id)
+    ? await Product.findOne({ productId: id, hasImage: true }).select("+image.data +image.contentType")
+    : null;
+
+  if (!product || !product.image || !product.image.data) {
+    return res.status(404).json({ error: "Image not found" });
+  }
+
+  res.set("Content-Type", product.image.contentType);
+  res.set("Cache-Control", "public, max-age=86400");
+  res.send(product.image.data);
+});
+
 // NEW: returns one mod by its id, or 404 if it doesn't exist
 app.get("/api/mods/:id", async (req, res) => {
   const id = Number(req.params.id);
@@ -207,6 +224,10 @@ app.use("/api", (req, res) => {
 app.use((err, req, res, next) => {
   if (err.type === "entity.parse.failed") {
     return res.status(400).json({ error: "Invalid JSON in request body" });
+  }
+
+  if (err.type === "entity.too.large") {
+    return res.status(413).json({ error: "File is too large" });
   }
 
   console.error(err);
