@@ -3,7 +3,7 @@ require("dotenv").config({ quiet: true });
 
 const express = require("express");
 const cookieParser = require("cookie-parser");
-const { connectDB } = require("./db");
+const { connectDB, getDbStatus } = require("./db");
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
 
@@ -60,8 +60,17 @@ function validateMod(data) {
 }
 
 // Health check route: confirms the server is alive
+// Also reports whether user accounts can work (database + JWT secret),
+// so problems after a deployment are easy to diagnose. No secrets are shown.
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", app: "FlySkyMods" });
+  res.json({
+    status: "ok",
+    app: "FlySkyMods",
+    accounts: {
+      ...getDbStatus(),
+      jwtSecret: Boolean(process.env.JWT_SECRET)
+    }
+  });
 });
 
 // Returns all mods. Optional filters:

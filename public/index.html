@@ -90,10 +90,21 @@
         </form>
 
         <!-- Account button: "Sign In" when logged out, the user's name when logged in -->
-        <button type="button" class="account-btn" id="account-btn">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
-          <span class="account-label" id="account-label">Sign In</span>
-        </button>
+        <div class="account-wrap">
+          <button type="button" class="account-btn" id="account-btn" aria-expanded="false" aria-controls="account-menu">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+            <span class="account-label" id="account-label">Sign In</span>
+          </button>
+
+          <!-- Account menu (shown when a signed-in user clicks the button) -->
+          <div class="account-menu" id="account-menu" hidden>
+            <p class="account-name" id="account-name"></p>
+            <p class="account-email" id="account-email"></p>
+            <span class="role-badge" id="account-role"></span>
+            <a href="admin.html" class="account-link" id="admin-link" hidden>Admin Dashboard</a>
+            <button type="button" class="account-link" id="logout-btn">Log Out</button>
+          </div>
+        </div>
 
         <!-- Wishlist button: shows how many mods are saved; click to view them -->
         <a href="#catalog" class="cart-btn" id="wishlist-btn" aria-label="Wishlist, 0 saved mods">

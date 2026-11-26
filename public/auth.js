@@ -17,6 +17,12 @@ const authMessage = document.getElementById("auth-message");
 const loginForm = document.getElementById("login-form");
 const registerForm = document.getElementById("register-form");
 const authTabs = document.querySelectorAll(".auth-tab");
+const accountMenu = document.getElementById("account-menu");
+const accountName = document.getElementById("account-name");
+const accountEmail = document.getElementById("account-email");
+const accountRole = document.getElementById("account-role");
+const adminLink = document.getElementById("admin-link");
+const logoutBtn = document.getElementById("logout-btn");
 
 // The logged-in user ({ id, name, email, role, createdAt }) or null
 let currentUser = null;
@@ -57,6 +63,36 @@ function renderAccountButton() {
     accountBtn.classList.remove("signed-in");
     accountBtn.setAttribute("aria-label", "Sign in or create an account");
   }
+}
+
+/* ---------------- Account menu (signed in) ---------------- */
+
+/**
+ * Fills the account menu with the user's details.
+ * textContent (not innerHTML) is used, so names can never inject HTML.
+ */
+function renderAccountMenu() {
+  if (!currentUser) return;
+
+  accountName.textContent = currentUser.name;
+  accountEmail.textContent = currentUser.email;
+  accountRole.textContent = currentUser.role === "admin" ? "Admin" : "Pilot";
+  accountRole.classList.toggle("admin", currentUser.role === "admin");
+
+  // Only admins see the dashboard link (the server checks again on every admin request)
+  adminLink.hidden = currentUser.role !== "admin";
+}
+
+function setAccountMenuOpen(open) {
+  accountMenu.hidden = !open;
+  accountBtn.setAttribute("aria-expanded", open);
+}
+
+async function logOut() {
+  await apiRequest("/api/auth/logout", { method: "POST" });
+  currentUser = null;
+  setAccountMenuOpen(false);
+  renderAccountButton();
 }
 
 /**
@@ -190,7 +226,22 @@ authDialog.addEventListener("click", (event) => {
 accountBtn.addEventListener("click", () => {
   if (!currentUser) {
     openAuthDialog("login");
+    return;
   }
+
+  renderAccountMenu();
+  setAccountMenuOpen(accountMenu.hidden);   // toggle
+});
+
+logoutBtn.addEventListener("click", logOut);
+
+// Close the account menu when clicking anywhere else, or pressing Escape
+document.addEventListener("click", (event) => {
+  if (!event.target.closest(".account-wrap")) setAccountMenuOpen(false);
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") setAccountMenuOpen(false);
 });
 
 // Check the login state when the page opens

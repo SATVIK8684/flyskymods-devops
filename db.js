@@ -3,6 +3,9 @@
    ========================================================= */
 const mongoose = require("mongoose");
 
+// Last connection error, reported by GET /api/health (never contains secrets)
+let lastConnectionError = null;
+
 /**
  * Connects to MongoDB Atlas using the connection string from the
  * MONGODB_URI environment variable.
@@ -15,9 +18,18 @@ async function connectDB(uri) {
     return false;
   }
 
-  await mongoose.connect(uri);
-  console.log("Connected to MongoDB");
-  return true;
+  try {
+    await mongoose.connect(uri);
+    lastConnectionError = null;
+    console.log("Connected to MongoDB");
+    return true;
+  } catch (error) {
+    // Hide anything that looks like a connection string before storing the message
+    lastConnectionError = String(error.message)
+      .replace(/mongodb(\+srv)?:\/\/\S+/gi, "[connection string]")
+      .slice(0, 150);
+    throw error;
+  }
 }
 
 /**
@@ -27,4 +39,16 @@ function isDbConnected() {
   return mongoose.connection.readyState === 1;
 }
 
-module.exports = { connectDB, isDbConnected };
+/**
+ * Database status for the health check:
+ * "not configured" | "connected" | "connecting" | "failed" | "disconnected"
+ */
+function getDbStatus() {
+  if (!process.env.MONGODB_URI) return { database: "not configured" };
+  if (isDbConnected()) return { database: "connected" };
+  if (mongoose.connection.readyState === 2) return { database: "connecting" };
+  if (lastConnectionError) return { database: "failed", reason: lastConnectionError };
+  return { database: "disconnected" };
+}
+
+module.exports = { connectDB, isDbConnected, getDbStatus };
