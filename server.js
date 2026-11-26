@@ -167,16 +167,21 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Internal server error" });
 });
 
-// Only start listening when run directly with "node server.js".
-// Tests will import `app` without opening a real port or connecting to MongoDB.
+// Connect to MongoDB as soon as the app is loaded.
+// Hosting platforms like Hostinger import this file and start `app` themselves,
+// so the connection must not depend on "node server.js" being used.
+// Jest sets NODE_ENV=test - tests use their own in-memory database instead.
+if (process.env.NODE_ENV !== "test") {
+  connectDB(process.env.MONGODB_URI).catch((error) => {
+    console.error("MongoDB connection failed:", error.message);
+  });
+}
+
+// Only open a port ourselves when run directly with "node server.js" / npm start.
 if (require.main === module) {
-  connectDB(process.env.MONGODB_URI)
-    .catch((error) => console.error("MongoDB connection failed:", error.message))
-    .finally(() => {
-      app.listen(PORT, () => {
-        console.log(`FlySkyMods server running on http://localhost:${PORT}`);
-      });
-    });
+  app.listen(PORT, () => {
+    console.log(`FlySkyMods server running on http://localhost:${PORT}`);
+  });
 }
 
 module.exports = app;
