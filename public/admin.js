@@ -360,6 +360,171 @@ filePicker.addEventListener("change", () => {
   if (file) uploadModFile(pickerProductId, file);
 });
 
+/* ---------------- Coupons ---------------- */
+
+const couponForm = document.getElementById("coupon-form");
+const couponMessage = document.getElementById("coupon-message");
+const couponsBody = document.getElementById("coupons-body");
+
+function describeDiscount(coupon) {
+  return coupon.type === "percent" ? `${coupon.value}% off` : `₹${coupon.value.toLocaleString("en-IN")} off`;
+}
+
+function renderCoupons(coupons) {
+  if (coupons.length === 0) {
+    couponsBody.innerHTML = `<tr><td colspan="6" class="admin-empty">No coupons yet.</td></tr>`;
+    return;
+  }
+
+  couponsBody.innerHTML = coupons
+    .map((c) => {
+      const expired = c.expiresAt && new Date(c.expiresAt).getTime() < Date.now();
+      const usedUp = c.maxUses !== null && c.uses >= c.maxUses;
+      let status = c.active ? "Active" : "Off";
+      if (c.active && expired) status = "Expired";
+      if (c.active && usedUp) status = "Used up";
+
+      return `
+        <tr data-id="${c.id}">
+          <td><strong>${escapeHTML(c.code)}</strong></td>
+          <td>${describeDiscount(c)}</td>
+          <td>${c.uses}${c.maxUses !== null ? " / " + c.maxUses : ""}</td>
+          <td>${c.expiresAt ? formatDate(c.expiresAt) : '<span class="admin-muted">Never</span>'}</td>
+          <td><span class="status-badge ${status === "Active" ? "approved" : "rejected"}">${status}</span></td>
+          <td class="admin-actions">
+            <button type="button" class="admin-action" data-action="toggle" data-active="${c.active}">${c.active ? "Turn off" : "Turn on"}</button>
+            <button type="button" class="admin-action danger" data-action="delete">Delete</button>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+async function loadCoupons() {
+  const { ok, data } = await api("/api/admin/coupons");
+  if (ok) renderCoupons(data);
+}
+
+couponForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  couponMessage.hidden = true;
+
+  const { ok, data } = await api("/api/admin/coupons", {
+    method: "POST",
+    body: {
+      code: document.getElementById("c-code").value,
+      type: document.getElementById("c-type").value,
+      value: Number(document.getElementById("c-value").value),
+      expiresAt: document.getElementById("c-expires").value || null,
+      maxUses: document.getElementById("c-max").value || null
+    }
+  });
+
+  if (!ok) {
+    couponMessage.textContent = errorText(data);
+    couponMessage.className = "auth-message error";
+    couponMessage.hidden = false;
+    return;
+  }
+
+  couponForm.reset();
+  await loadCoupons();
+});
+
+couponsBody.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-action]");
+  if (!button) return;
+  const id = button.closest("tr").dataset.id;
+
+  if (button.dataset.action === "toggle") {
+    await api(`/api/admin/coupons/${id}`, { method: "PATCH", body: { active: button.dataset.active !== "true" } });
+  } else if (button.dataset.action === "delete") {
+    if (!confirm("Delete this coupon?")) return;
+    await api(`/api/admin/coupons/${id}`, { method: "DELETE" });
+  }
+  await loadCoupons();
+});
+
+/* ---------------- Purchase requests ---------------- */
+
+const ordersBody = document.getElementById("orders-body");
+const orderChips = document.querySelectorAll("#order-filters .chip");
+const pendingCount = document.getElementById("pending-count");
+let orderStatusFilter = "pending";
+
+function renderOrders(orders) {
+  if (orders.length === 0) {
+    ordersBody.innerHTML = `<tr><td colspan="7" class="admin-empty">No purchase requests here.</td></tr>`;
+    return;
+  }
+
+  ordersBody.innerHTML = orders
+    .map((o) => {
+      const amount = o.discount > 0
+        ? `${formatPrice(o.finalPrice)}<br><span class="admin-muted">${formatPrice(o.price)} − ${escapeHTML(o.couponCode)}</span>`
+        : formatPrice(o.finalPrice);
+      const actions = o.status === "pending"
+        ? `<button type="button" class="admin-action approve" data-action="approved">Approve</button>
+           <button type="button" class="admin-action danger" data-action="rejected">Reject</button>`
+        : `<span class="admin-muted">${o.decidedAt ? formatDate(o.decidedAt) : ""}${o.adminNote ? "<br>" + escapeHTML(o.adminNote) : ""}</span>`;
+
+      return `
+        <tr data-id="${o.id}">
+          <td>${formatDate(o.createdAt)}</td>
+          <td>${escapeHTML(o.userName)}<br><span class="admin-muted">${escapeHTML(o.userEmail)}</span></td>
+          <td>${escapeHTML(o.productName)}<br><span class="admin-muted">v${escapeHTML(o.productVersion)}</span></td>
+          <td>${amount}</td>
+          <td><code>${escapeHTML(o.paymentRef || "—")}</code></td>
+          <td><span class="status-badge ${o.status}">${o.status}</span></td>
+          <td class="admin-actions">${actions}</td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+async function loadOrders() {
+  const query = orderStatusFilter ? `?status=${orderStatusFilter}` : "";
+  const [list, pending] = await Promise.all([
+    api(`/api/admin/orders${query}`),
+    api("/api/admin/orders?status=pending")
+  ]);
+
+  if (list.ok) renderOrders(list.data);
+  if (pending.ok) {
+    pendingCount.textContent = pending.data.length;
+    pendingCount.hidden = pending.data.length === 0;
+  }
+}
+
+orderChips.forEach((chip) => {
+  chip.addEventListener("click", () => {
+    orderStatusFilter = chip.dataset.status;
+    orderChips.forEach((c) => c.classList.toggle("active", c === chip));
+    loadOrders();
+  });
+});
+
+ordersBody.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-action]");
+  if (!button) return;
+  const id = button.closest("tr").dataset.id;
+  const status = button.dataset.action;
+
+  let note = "";
+  if (status === "rejected") {
+    note = prompt("Reason for rejecting (shown to the customer):", "Payment not received");
+    if (note === null) return;   // cancelled
+  } else if (!confirm("Approve this purchase? The customer will be able to download the mod.")) {
+    return;
+  }
+
+  const { ok, data } = await api(`/api/admin/orders/${id}`, { method: "PATCH", body: { status, note } });
+  if (!ok) alert(errorText(data));
+  await Promise.all([loadOrders(), loadCoupons()]);
+});
+
 /* ---------------- Start ---------------- */
 
 async function loadDashboard() {
@@ -392,7 +557,7 @@ async function loadDashboard() {
       ? ""
       : "Mod file uploads are switched off until the Cloudflare R2 keys are added (see .env.example). Pictures work already.";
 
-    await loadProducts();
+    await Promise.all([loadProducts(), loadCoupons(), loadOrders()]);
   } catch {
     showBlocked("Could not reach the server", "Check your connection and try again.");
   }
